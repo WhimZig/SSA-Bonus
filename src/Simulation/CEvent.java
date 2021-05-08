@@ -11,20 +11,20 @@ public class CEvent
 	/** The object involved with the event */
 	private CProcess target;
 	/** The type of the event */
-	private int type;
+	private ProductType type;
 	/** The time on which the event will be executed */
 	private double executionTime;
 
 	/**
 	*	Constructor for objects
 	*	@param dl	The object that will process the event
-	*	@param tp	The type of the event
+	*	@param prod	The type of the event
 	*	@param tme	The time on which the event will be executed
 	*/
-	public CEvent(CProcess dl,int tp, double tme)
+	public CEvent(CProcess dl,ProductType prod, double tme)
 	{
 		target=dl;
-		type=tp;
+		type=prod;
 		executionTime=tme;
 	}
 	

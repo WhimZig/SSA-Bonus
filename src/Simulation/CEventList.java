@@ -32,15 +32,15 @@ public class CEventList implements CProcess
 	/**
 	*	Method for the construction of a new event.
 	*	@param target The object that will process the event
-	*	@param type A type indicator of the event for objects that can process multiple types of events.
+	*	@param prod A type indicator of the event for objects that can process multiple types of events.
 	*	@param tme The time at which the event will be executed
 	*/
-	public void add(CProcess target, int type, double tme)
+	public void add(CProcess target, ProductType prod, double tme)
 	{
 		boolean success=false;
 		// First create a new event using the parameters
 		CEvent evnt;
-                evnt = new CEvent(target,type,tme);
+                evnt = new CEvent(target,prod,tme);
 		// Now it is examened where the event has to be inserted in the list
 		for(int i=0;i<events.size();i++)
 		{
@@ -86,7 +86,7 @@ public class CEventList implements CProcess
 	*/
 	public void start(double mx)
 	{
-		add(this,-1,mx);
+		add(this,null,mx);
 		// stop criterion
 		while((events.size()>0)&&(!stopFlag))
 		{
@@ -121,9 +121,9 @@ public class CEventList implements CProcess
 	*	@param tme	The current time
 	*/
         @Override
-	public void execute(int type, double tme)
+	public void execute(ProductType type, double tme)
 	{
-		if(type==-1)
+		if(type==null)
 			stop();
 	}
 }

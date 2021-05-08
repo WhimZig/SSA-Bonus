@@ -95,7 +95,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*	@param type	The type of the event that has to be executed
 	*	@param tme	The current time
 	*/
-	public void execute(int type, double tme)
+	public void execute(ProductType type, double tme)
 	{
 		// show arrival
 		System.out.println("Product finished at time = " + tme);
@@ -125,7 +125,7 @@ public class Machine implements CProcess,ProductAcceptor
 			// mark starting time
 			product.stamp(eventlist.getTime(),"Production started",name);
 			// start production
-			startProduction();
+			startProduction(p.prod);
 			// Flag that the product has arrived
 			return true;
 		}
@@ -138,7 +138,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*	Start the handling of the current product with an exponentionally distributed processingtime with average 30
 	*	This time is placed in the eventlist
 	*/
-	private void startProduction()
+	private void startProduction(ProductType type)
 	{
 		// generate duration
 		if(meanProcTime>0)
@@ -146,7 +146,7 @@ public class Machine implements CProcess,ProductAcceptor
 			double duration = drawRandomExponential(meanProcTime);
 			// Create a new event in the eventlist
 			double tme = eventlist.getTime();
-			eventlist.add(this,0,tme+duration); //target,type,time
+			eventlist.add(this,type,tme+duration); //target,type,time
 			// set status to busy
 			status='b';
 		}
@@ -154,7 +154,7 @@ public class Machine implements CProcess,ProductAcceptor
 		{
 			if(processingTimes.length>procCnt)
 			{
-				eventlist.add(this,0,eventlist.getTime()+processingTimes[procCnt]); //target,type,time
+				eventlist.add(this,type,eventlist.getTime()+processingTimes[procCnt]); //target,type,time
 				// set status to busy
 				status='b';
 				procCnt++;
@@ -174,4 +174,5 @@ public class Machine implements CProcess,ProductAcceptor
 		double res = -mean*Math.log(u);
 		return res;
 	}
+
 }

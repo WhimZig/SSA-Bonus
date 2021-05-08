@@ -40,7 +40,7 @@ public class Source implements CProcess
 		meanArrTime=33;
 		this.prod = ProductType.Normal;
 		// put first event in list for initialization
-		list.add(this,0,drawRandomExponential(meanArrTime)); //target,type,time
+		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
 	}
 	
 	public Source(ProductAcceptor q,CEventList l,String n, ProductType e)
@@ -51,7 +51,7 @@ public class Source implements CProcess
 		meanArrTime=33;
 		prod = e;
 		// put first event in list for initialization
-		list.add(this,0,drawRandomExponential(meanArrTime)); //target,type,time
+		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class Source implements CProcess
 		name = n;
 		meanArrTime=m;
 		// put first event in list for initialization
-		list.add(this,0,drawRandomExponential(meanArrTime)); //target,type,time
+		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
 	}
 
 	/**
@@ -89,16 +89,16 @@ public class Source implements CProcess
 		interarrivalTimes=ia;
 		interArrCnt=0;
 		// put first event in list for initialization
-		list.add(this,0,interarrivalTimes[0]); //target,type,time
+		list.add(this,prod,interarrivalTimes[0]); //target,type,time
 	}
 	
         @Override
-	public void execute(int type, double tme)
+	public void execute(ProductType type, double tme)
 	{
 		// show arrival
 		System.out.println("Arrival at time = " + tme);
 		// give arrived product to queue
-		Product p = new Product(this.prod);
+		Product p = new Product(type);
 		p.stamp(tme,"Creation",name);
 		queue.giveProduct(p);
 		// generate duration
@@ -106,14 +106,14 @@ public class Source implements CProcess
 		{
 			double duration = drawRandomExponential(meanArrTime);
 			// Create a new event in the eventlist
-			list.add(this,0,tme+duration); //target,type,time
+			list.add(this,prod,tme+duration); //target,type,time
 		}
 		else
 		{
 			interArrCnt++;
 			if(interarrivalTimes.length>interArrCnt)
 			{
-				list.add(this,0,tme+interarrivalTimes[interArrCnt]); //target,type,time
+				list.add(this,prod,tme+interarrivalTimes[interArrCnt]); //target,type,time
 			}
 			else
 			{
