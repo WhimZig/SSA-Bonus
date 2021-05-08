@@ -21,6 +21,9 @@ public class Source implements CProcess
 	private double[] interarrivalTimes;
 	/** Interarrival time iterator */
 	private int interArrCnt;
+	
+	
+	ProductType prod;
 
 	/**
 	*	Constructor, creates objects
@@ -35,6 +38,18 @@ public class Source implements CProcess
 		queue = q;
 		name = n;
 		meanArrTime=33;
+		this.prod = ProductType.Normal;
+		// put first event in list for initialization
+		list.add(this,0,drawRandomExponential(meanArrTime)); //target,type,time
+	}
+	
+	public Source(ProductAcceptor q,CEventList l,String n, ProductType e)
+	{
+		list = l;
+		queue = q;
+		name = n;
+		meanArrTime=33;
+		prod = e;
 		// put first event in list for initialization
 		list.add(this,0,drawRandomExponential(meanArrTime)); //target,type,time
 	}
@@ -83,7 +98,7 @@ public class Source implements CProcess
 		// show arrival
 		System.out.println("Arrival at time = " + tme);
 		// give arrived product to queue
-		Product p = new Product();
+		Product p = new Product(this.prod);
 		p.stamp(tme,"Creation",name);
 		queue.giveProduct(p);
 		// generate duration

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 public class Queue implements ProductAcceptor
 {
 	/** List in which the products are kept */
-	private ArrayList<Product> row;
+	protected ArrayList<Product> productQueue;
 	/** Requests from machine that will be handling the products */
-	private ArrayList<Machine> requests;
+	protected ArrayList<Machine> requests;
 	
 	/**
 	*	Initializes the queue and introduces a dummy machine
@@ -20,7 +20,7 @@ public class Queue implements ProductAcceptor
 	*/
 	public Queue()
 	{
-		row = new ArrayList<>();
+		productQueue = new ArrayList<>();
 		requests = new ArrayList<>();
 	}
 	
@@ -31,12 +31,12 @@ public class Queue implements ProductAcceptor
 	public boolean askProduct(Machine machine)
 	{
 		// This is only possible with a non-empty queue
-		if(row.size()>0)
+		if(productQueue.size()>0)
 		{
 			// If the machine accepts the product
-			if(machine.giveProduct(row.get(0)))
+			if(machine.giveProduct(productQueue.get(0)))
 			{
-				row.remove(0);// Remove it from the queue
+				productQueue.remove(0);// Remove it from the queue
 				return true;
 			}
 			else
@@ -57,7 +57,7 @@ public class Queue implements ProductAcceptor
 	{
 		// Check if the machine accepts it
 		if(requests.size()<1)
-			row.add(p); // Otherwise store it
+			productQueue.add(p); // Otherwise store it
 		else
 		{
 			boolean delivered = false;
@@ -68,8 +68,13 @@ public class Queue implements ProductAcceptor
 				requests.remove(0);
 			}
 			if(!delivered)
-				row.add(p); // Otherwise store it
+				productQueue.add(p); // Otherwise store it
 		}
 		return true;
 	}
+	
+	int getSize() {
+		return this.productQueue.size();
+	}
+	
 }
