@@ -33,6 +33,7 @@ public class Sink implements ProductAcceptor
 		times = new ArrayList<>();
 		events = new ArrayList<>();
 		stations = new ArrayList<>();
+		producttypes = new ArrayList<>();
 		number = 0;
 	}
 	
