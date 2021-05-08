@@ -2,7 +2,7 @@ package Simulation;
 
 import java.util.ArrayList;
 
-public class QueueDistributor extends Queue {
+public class QueueDistributor implements ProductAcceptor {
 	
 	ArrayList<Queue> queues;
 	
@@ -44,31 +44,6 @@ public class QueueDistributor extends Queue {
 		}
 		
 		return true;
-	}
-	
-	@Override
-	public boolean askProduct(Machine machine)
-	{
-		
-		
-		// This is only possible with a non-empty queue
-		if(productQueue.size()>0)
-		{
-			// If the machine accepts the product
-			if(machine.giveProduct(productQueue.get(0)))
-			{
-				productQueue.remove(0);// Remove it from the queue
-				return true;
-			}
-			else
-				return false; // Machine rejected; don't queue request
-		}
-		else
-		{
-			// Nick: So this means that the machine is free?
-			requests.add(machine);
-			return false; // queue request
-		}
 	}
 	
 }
