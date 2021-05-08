@@ -45,7 +45,7 @@ public class Machine implements CProcess,ProductAcceptor
 		eventlist=e;
 		name=n;
 		meanProcTime=30;
-		queue.askProduct(this);
+		queue.askProduct(this); // this adds the machine to the reference list of the queue
 	}
 
 	/**
