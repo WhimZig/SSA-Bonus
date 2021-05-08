@@ -6,6 +6,9 @@
 
 package Simulation;
 
+import java.util.ArrayList;
+import java.util.*;
+
 public class Simulation {
 
     public CEventList list;
@@ -19,6 +22,8 @@ public class Simulation {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+    	
+    	/*
     	// Create an eventlist
     	CEventList l = new CEventList();
     	
@@ -57,7 +62,38 @@ public class Simulation {
     	
     	
     	// start the eventlist
+    	l.start(2000); // 2000 is maximum time*/
+    	
+    	CEventList l = new CEventList();
+    	// A queue for the machine
+    	Queue q1 = new Queue();
+    	Queue q2 = new Queue();
+    	
+    	
+    	ArrayList<Queue> qlist = new ArrayList<>();
+    	qlist.add(q1);
+    	qlist.add(q2);
+    	
+    	
+    	QueueDistributor qd = new QueueDistributor(qlist);
+    	
+    	
+    	// A source
+    	Source s = new Source(qd,l,"Source 1");
+    	Source s2 = new Source(qd,l,"Source 2");
+    	
+    	
+    	// A sink
+    	Sink si = new Sink("Sink 1");
+    	// A machine
+    	Machine m1 = new Machine(q1,si,l,"Machine 1");
+    	
+    	Machine m2 = new Machine(q2,si,l,"Machine 2");
+    	
+    	// Machine m2 = new Machine(q2,si,l,"Machine 2");
+    	// start the eventlist
     	l.start(2000); // 2000 is maximum time
+    	
     }
     
 }
