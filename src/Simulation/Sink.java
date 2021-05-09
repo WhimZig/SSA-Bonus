@@ -15,8 +15,9 @@ public class Sink implements ProductAcceptor
 	private ArrayList<Double> times;
 	private ArrayList<String> events;
 	private ArrayList<String> stations;
-	
 	private ArrayList<ProductType> producttypes;
+	private ArrayList<Double> regularDelay;
+	private ArrayList<Double> GPUDelay;
 	/** Counter to number products */
 	private int number;
 	/** Name of the sink */
@@ -42,18 +43,37 @@ public class Sink implements ProductAcceptor
 	{
 		number++;
 		products.add(p);
+		producttypes.add(p.prod);
 		// store stamps
 		ArrayList<Double> t = p.getTimes();
 		ArrayList<String> e = p.getEvents();
 		ArrayList<String> s = p.getStations();
-		ProductType prodtype = p.prod;
 		for(int i=0;i<t.size();i++)
 		{
+			System.out.print(e.get(i));
+			System.out.println(t.get(i));
 			numbers.add(number);
 			times.add(t.get(i));
 			events.add(e.get(i));
 			stations.add(s.get(i));
-			this.producttypes.add(prodtype);
+		}
+		
+		// calculate delay
+		double created = 0;
+		double start = 0;
+		for(int i=0;i<t.size();i++)
+		{
+			if (e.get(i).equals("Creation")){
+				start = t.get(i);
+			}
+			else if (e.get(i).equals("Production started")){
+				start = t.get(i);
+			}
+		}
+		if(p.prod==ProductType.GPU) {
+			GPUDelay.add((start-created));
+		}else {
+			regularDelay.add((start-created));
 		}
 		return true;
 	}
