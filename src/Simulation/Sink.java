@@ -35,6 +35,8 @@ public class Sink implements ProductAcceptor
 		events = new ArrayList<>();
 		stations = new ArrayList<>();
 		producttypes = new ArrayList<>();
+		regularDelay = new ArrayList<>();
+		GPUDelay = new ArrayList<>();
 		number = 0;
 	}
 	
@@ -50,8 +52,6 @@ public class Sink implements ProductAcceptor
 		ArrayList<String> s = p.getStations();
 		for(int i=0;i<t.size();i++)
 		{
-			System.out.print(e.get(i));
-			System.out.println(t.get(i));
 			numbers.add(number);
 			times.add(t.get(i));
 			events.add(e.get(i));
@@ -64,7 +64,7 @@ public class Sink implements ProductAcceptor
 		for(int i=0;i<t.size();i++)
 		{
 			if (e.get(i).equals("Creation")){
-				start = t.get(i);
+				created = t.get(i);
 			}
 			else if (e.get(i).equals("Production started")){
 				start = t.get(i);
