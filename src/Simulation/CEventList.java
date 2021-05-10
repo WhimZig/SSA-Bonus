@@ -59,6 +59,7 @@ public class CEventList implements CProcess
 			// Else the new event is appended to the list
 			events.add(evnt);
 		}
+
 	}
 	
 	/**
@@ -123,7 +124,9 @@ public class CEventList implements CProcess
         @Override
 	public void execute(ProductType type, double tme)
 	{
-		if(type==null)
+		if(type==null) {
 			stop();
+		}
+		
 	}
 }

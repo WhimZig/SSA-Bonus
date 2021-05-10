@@ -75,6 +75,7 @@ public class Sink implements ProductAcceptor
 		}else {
 			regularDelay.add((start-created));
 		}
+		calculate();
 		return true;
 	}
 	
@@ -112,5 +113,19 @@ public class Sink implements ProductAcceptor
 		String[] tmp = new String[stations.size()];
 		tmp = stations.toArray(tmp);
 		return tmp;
+	}
+	public void calculate() {
+		double GPUsum = 0;
+		double Regularsum = 0;
+		for(int i = 0;i<GPUDelay.size();i++) {
+			GPUsum += GPUDelay.get(i);
+		}
+		for(int i = 0;i<regularDelay.size();i++) {
+			Regularsum += regularDelay.get(i);
+		}
+		System.out.println("Regular average delay time - " + Regularsum/regularDelay.size());
+		System.out.println("GPU average delay time - " + GPUsum/GPUDelay.size());
+		System.out.println("Overall average delay time - " + (GPUsum+Regularsum)/(GPUDelay.size()+regularDelay.size()));
+				
 	}
 }

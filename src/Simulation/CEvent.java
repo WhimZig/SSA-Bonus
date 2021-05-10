@@ -9,7 +9,7 @@ package Simulation;
 public class CEvent
 {
 	/** The object involved with the event */
-	private CProcess target;
+	CProcess target;
 	/** The type of the event */
 	private ProductType type;
 	/** The time on which the event will be executed */

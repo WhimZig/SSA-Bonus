@@ -16,7 +16,7 @@ public class Machine implements CProcess,ProductAcceptor
 	/** Queue from which the machine has to take products */
 	private Queue queue;
 	/** Sink to dump products */
-	private ProductAcceptor sink;
+	ProductAcceptor sink;
 	/** Status of the machine (b=busy, i=idle) */
 	private char status;
 	/** Machine name */
