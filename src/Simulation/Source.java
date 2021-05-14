@@ -183,7 +183,7 @@ public class Source implements CProcess
 	 * Having the method separately does make things easier
 	 */
 	public static double turnToDayTime(double time) {
-		return time/24;
+		return time%24;
 	}
 	
 	/*
