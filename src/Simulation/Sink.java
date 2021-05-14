@@ -23,6 +23,9 @@ public class Sink implements ProductAcceptor
 	/** Name of the sink */
 	private String name;
 	
+	private double totalDelay = 0;
+	private double totalGPUDelay = 0;
+	
 	/**
 	*	Constructor, creates objects
 	*/
@@ -70,12 +73,15 @@ public class Sink implements ProductAcceptor
 				start = t.get(i);
 			}
 		}
+		double delay = start - created;
 		if(p.prod==ProductType.GPU) {
-			GPUDelay.add((start-created));
+			GPUDelay.add(delay);
+			totalGPUDelay += delay;
 		}else {
-			regularDelay.add((start-created));
+			regularDelay.add(delay);
+			totalDelay += delay;
 		}
-		calculate();
+		print_delay();
 		return true;
 	}
 	
@@ -114,18 +120,9 @@ public class Sink implements ProductAcceptor
 		tmp = stations.toArray(tmp);
 		return tmp;
 	}
-	public void calculate() {
-		double GPUsum = 0;
-		double Regularsum = 0;
-		for(int i = 0;i<GPUDelay.size();i++) {
-			GPUsum += GPUDelay.get(i);
-		}
-		for(int i = 0;i<regularDelay.size();i++) {
-			Regularsum += regularDelay.get(i);
-		}
-		System.out.println("Regular average delay time - " + Regularsum/regularDelay.size());
-		System.out.println("GPU average delay time - " + GPUsum/GPUDelay.size());
-		System.out.println("Overall average delay time - " + (GPUsum+Regularsum)/(GPUDelay.size()+regularDelay.size()));
-				
+	public void print_delay() {
+		System.out.println("Regular average delay time - " + totalDelay/regularDelay.size());
+		System.out.println("GPU average delay time - " + totalGPUDelay/GPUDelay.size());
+		System.out.println("Overall average delay time - " + (totalDelay+totalGPUDelay)/(GPUDelay.size()+regularDelay.size()));
 	}
 }
