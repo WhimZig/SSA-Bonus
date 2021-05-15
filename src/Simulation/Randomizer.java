@@ -3,11 +3,12 @@ package Simulation;
 import java.util.Random;
 
 public class Randomizer {
-
-	public final long seed;
-	private final Random source;
 	
-	public static int ITERATIONS = 20;
+	/**
+	 * How many iterations of newton's method are used for each randomly generated number.
+	 * 20 is way too many, you can probably do fine with a lot less
+	 */
+	public static int ITERATIONS = 12;
 	
 	public static void main(String[] args) {
 		Randomizer r = new Randomizer();
@@ -18,7 +19,27 @@ public class Randomizer {
 		}
 		System.out.format("t = %.3f\n", T);
 		System.out.println("end");
+		
+		System.out.println("Testing accuracy for different iteration counts:");
+		for (int i=1; i <= 20; i++) {
+			ITERATIONS = i;
+			r.set_seed(2019);
+			double count = 100000d;
+			T = 0;
+			double sum = 0, max = Double.NEGATIVE_INFINITY;
+			for (int k=0; k < count; k++) {
+				T += r.nextNonStationaryPoisson(T, 24, 0.8, 2);
+				double err = r.get_error();
+				sum += err;
+				max = Math.max(max, err);
+			}
+			System.out.format("With %d iterations:\nAverage error = %e\nMaximum error = "+
+			"%e\nFinal T = %.4f after %d steps\n\n", i, sum/count, max, T, (int)count);
+		}
 	}
+	
+	public long seed;
+	private Random source;
 	
 	public Randomizer() {
 		this(System.currentTimeMillis());
@@ -28,6 +49,15 @@ public class Randomizer {
 		this.source = new Random(seed);
 	}
 	
+	public void set_seed(long seed) {
+		this.seed = seed;
+		this.source = new Random(seed);
+	}
+	
+	/**
+	 * This function solves the integral \int_{t}^{t+dt} lambda(a) da for:
+	 * lambda(T) = mean + amplitude * sin( T * 2pi / period)
+	 */
 	private double get_mean_arrival_rate_times_t(double start_time, double end_time, double period, double amplitude, double mean) {
 		double T1 = start_time, T2 = end_time, P = period, A = amplitude, M = mean;
 		double w = 0.5 * P / Math.PI;
@@ -60,8 +90,14 @@ public class Randomizer {
 			x_i = x_ip1;
 		}
 		double P = non_stationary_poisson_CDF(current_time, x_i, period, amplitude, mean);
-		System.out.format("error = %e\n", Math.abs(P - probability));
+		error = Math.abs(P - probability);
 		return x_i;
+	}
+	
+	private double error = 0;
+	
+	public double get_error() {
+		return error;
 	}
 	
 	public double nextNonStationaryPoisson(double current_time, double period, double amplitude, double mean) {
