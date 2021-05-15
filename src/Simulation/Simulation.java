@@ -68,29 +68,54 @@ public class Simulation {
     	// A queue for the machine
     	Queue q1 = new Queue();
     	Queue q2 = new Queue();
+    	Queue q3 = new Queue();
+    	Queue q4 = new Queue();
+    	Queue q5 = new Queue();
+    	Queue q6 = new Queue();
+    	Queue gpuq1 = new GPUQueue();
+    	Queue gpuq2 = new GPUQueue();
     	
     	
     	ArrayList<Queue> qlist = new ArrayList<>();
     	qlist.add(q1);
     	qlist.add(q2);
+    	qlist.add(q3);
+    	qlist.add(q4);
+    	qlist.add(q5);
+    	qlist.add(q6);
+    	qlist.add(gpuq1);
+    	qlist.add(gpuq2);
     	
     	
     	QueueDistributor qd = new QueueDistributor(qlist);
     	
     	
-    	// A source
-    	Source s = new Source(qd,l,"Source 1");
-    	Source s2 = new Source(qd,l,"Source 2");
+    	// Not sure if the interarrival time for the normal is correct
+    	// And for now it's assuming that it's just a stationary poisson process
+    	Source s = new Source(qd,l,"Source normal", 30, ProductType.Normal);
+    	Source sGPU = new Source(qd,l,"Source GPU", 360, ProductType.GPU);
     	
     	
     	// A sink
     	Sink si = new Sink("Sink 1");
     	// A machine
-    	Machine m1 = new Machine(q1,si,l,"Machine 1");
+    	Machine m1 = new Machine(q1,si,l,"Machine 1", 145, 42);
     	
-    	Machine m2 = new Machine(q2,si,l,"Machine 2");
+    	Machine m2 = new Machine(q2,si,l,"Machine 2", 145, 42);
     	
-    	// Machine m2 = new Machine(q2,si,l,"Machine 2");
+    	Machine m3 = new Machine(q3,si,l,"Machine 3", 145, 42);
+    	
+    	Machine m4 = new Machine(q4,si,l,"Machine 4", 145, 42);
+    	
+    	Machine m5 = new Machine(q5,si,l,"Machine 5", 145, 42);
+    	
+    	Machine m6 = new Machine(q6,si,l,"Machine 6", 145, 42);
+    	
+    	GPUMachine gpum1 = new GPUMachine(gpuq1,si,l, "GPUMachine 1", 145, 42);
+    	
+    	GPUMachine gpum2 = new GPUMachine(gpuq2,si,l, "GPUMachine 2", 145, 42);
+    	
+    	
     	// start the eventlist
     	l.start(2000); // 2000 is maximum time
     	
