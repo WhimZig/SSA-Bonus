@@ -81,7 +81,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*	@param e	Eventlist that will manage events
 	*	@param n	The name of the machine
 	*        @param m	Mean processing time
-	*//*
+	*/
 	public Machine(Queue q, ProductAcceptor s, CEventList e, String n, double m)
 	{
 		status='i';
@@ -107,7 +107,7 @@ public class Machine implements CProcess,ProductAcceptor
 		queue.askProduct(this);
 	}
 	
-	*//**
+	/**
 	*	Constructor
 	*        Service times are pre-specified
 	*	@param q	Queue from which the machine has to take products
@@ -115,7 +115,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*	@param e	Eventlist that will manage events
 	*	@param n	The name of the machine
 	*        @param st	service times
-	*//*
+	*/
 	public Machine(Queue q, ProductAcceptor s, CEventList e, String n, double[] st)
 	{
 		status='i';
@@ -129,7 +129,7 @@ public class Machine implements CProcess,ProductAcceptor
 		queue.askProduct(this);
 	}
 
-	*//**
+	/**
 	*	Method to have this object execute an event
 	*	@param type	The type of the event that has to be executed
 	*	@param tme	The current time
