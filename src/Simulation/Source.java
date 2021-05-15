@@ -1,6 +1,5 @@
 package Simulation;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -12,127 +11,113 @@ import java.util.Random;
  */
 public class Source implements CProcess
 {
+	public static boolean DEBUG = true;
+	
 	/** Eventlist that will be requested to construct events */
 	private CEventList list;
 	/** Queue that buffers products for the machine */
 	private ProductAcceptor queue;
 	/** Name of the source */
 	private String name;
-	/** Mean interarrival time */
-	private double meanArrTime;
 	/** Interarrival times (in case pre-specified) */
 	private double[] interarrivalTimes;
 	/** Interarrival time iterator */
 	private int interArrCnt;
+	/** true if using data instead of distributions*/
+	private boolean useData;
+	
+	private double meanS;
+	private double meanNS;
+	private double amplitude;
+	private double period;
 	
 	// Random number generator and its seed
 	// Should be modified to allow for different seeds, but this works
-	protected long seed = 4;
-	protected Random generator = new Random(seed);
-	
+	protected static long seed = System.currentTimeMillis();
+	static {
+		System.out.println("Seed used for Source : "+seed);
+	}
+	protected static Random generator = new Random(seed);
+	protected static Randomizer randomizer = new Randomizer(seed);
 	
 	ProductType prod;
-
-	/**
-	*	Constructor, creates objects
-	*        Interarrival times are exponentially distributed with mean 33
-	*	@param q	The receiver of the products
-	*	@param l	The eventlist that is requested to construct events
-	*	@param n	Name of object
-	*/
-	public Source(ProductAcceptor q,CEventList l,String n)
-	{
+	
+	public Source(ProductAcceptor q, CEventList l, String n, ProductType e, 
+			double meanS, double meanNS, double amplitude, double period) {
 		list = l;
 		queue = q;
 		name = n;
-		meanArrTime=33;
-		this.prod = ProductType.Normal;
-		// put first event in list for initialization
-		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
+		prod = e;
+		useData = false;
+		this.meanS = meanS;
+		this.meanNS = meanNS;
+		this.amplitude = amplitude;
+		this.period = period;
+		switch (e) {
+			case GPU: list.add(this,prod,drawRandomExponential(meanS)); break;
+			default: list.add(this,prod,drawNonStationaryExponential
+					(l.getTime(), period, amplitude, meanNS));
+		}
+	}
+	
+	public Source(ProductAcceptor q,CEventList l,String n)
+	{
+		this(q, l, n, ProductType.Normal);
 	}
 	
 	public Source(ProductAcceptor q,CEventList l,String n, ProductType e)
 	{
-		list = l;
-		queue = q;
-		name = n;
-		meanArrTime=33;
-		prod = e;
-		// put first event in list for initialization
-		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
-	}
-
-	/**
-	*	Constructor, creates objects
-	*        Interarrival times are exponentially distributed with specified mean
-	*	@param q	The receiver of the products
-	*	@param l	The eventlist that is requested to construct events
-	*	@param n	Name of object
-	*	@param m	Mean arrival time
-	*/
-	public Source(ProductAcceptor q,CEventList l,String n,double m)
-	{
-		list = l;
-		queue = q;
-		name = n;
-		meanArrTime=m;
-		// put first event in list for initialization
-		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
+		this(q, l, n, 0.2/60, e);
 	}
 	
 	public Source(ProductAcceptor q,CEventList l,String n, double m, ProductType e)
 	{
-		list = l;
-		queue = q;
-		name = n;
-		meanArrTime=m;
-		prod = e;
-		// put first event in list for initialization
-		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
+		this(q, l, n, e, m, 2./60, 0.8/60, 24.*60);
 	}
 
 	/**
-	*	Constructor, creates objects
-	*        Interarrival times are prespecified
-	*	@param q	The receiver of the products
-	*	@param l	The eventlist that is requested to construct events
-	*	@param n	Name of object
-	*	@param ia	interarrival times
-	*/
+	*	Source from data
+	*//*
+	* Not used
 	public Source(ProductAcceptor q,CEventList l,String n,double[] ia)
 	{
 		list = l;
 		queue = q;
 		name = n;
-		meanArrTime=-1;
+		useData = true;
 		interarrivalTimes=ia;
 		interArrCnt=0;
-		// put first event in list for initialization
 		list.add(this,prod,interarrivalTimes[0]); //target,type,time
-	}
+	}*/
 	
-        @Override
-	public void execute(ProductType type, double tme)
+    @Override
+	public void execute(ProductType type, double time)
 	{
 		// show arrival
-		System.out.println("Arrival at time = " + tme + " of product " + type);
+		if (DEBUG) System.out.println("Arrival at time = " + time + " of product " + type);
 		// give arrived product to queue
 		Product p = new Product(type);
-		p.stamp(tme,"Creation",name);
+		p.stamp(time,"Creation",name);
 		queue.giveProduct(p);
 		// generate duration
-		if(meanArrTime>0)
+		if(!useData)
 		{
-			double duration = drawRandomExponential(meanArrTime);
+			
+			double duration = -1;
+			
+			switch (prod) {
+				case GPU: duration = drawRandomExponential(meanS); break;
+				default: duration = 
+						drawNonStationaryExponential(list.getTime(), period, amplitude, meanNS);
+			}
 			// Create a new event in the eventlist
-			list.add(this,prod,tme+duration); //target,type,time
+			list.add(this,prod,time+duration); //target,type,time
 		}
-		else
-		{
+		else { // not sure if this works correctly
 			interArrCnt++;
 			if(interarrivalTimes.length>interArrCnt)
 			{
-				list.add(this,prod,tme+interarrivalTimes[interArrCnt]); //target,type,time
+				list.add(this,prod,time+interarrivalTimes[interArrCnt]); //target,type,time
 			}
 			else
 			{
@@ -150,6 +135,10 @@ public class Source implements CProcess
 		return res;
 	}
 	
+	public static double drawNonStationaryExponential(double time, double period, double amplitude, double mean) {
+		return randomizer.nextNonStationaryPoisson(time, period, amplitude, mean);
+	}
+	
 	// This assumes that it'll always be with a sinusoid version
 	// Method givne follows thinning algorithm suggested here: http://www.columbia.edu/~ks20/4404-Sigman/4404-Notes-NSP.pdf
 	public double drawNonStationaryExponential(double mean, double cur_time, double amplitude) {
@@ -160,7 +149,7 @@ public class Source implements CProcess
 		double upperBound = mean + Math.abs(amplitude)*Math.abs(mean);
 		boolean invalid_number = true;
 		
-		double u = this.generator.nextDouble();
+		double u = generator.nextDouble();
 		
 		double final_value = -(1.0/upperBound)*Math.log(u);
 		
@@ -168,7 +157,7 @@ public class Source implements CProcess
 		// I'll worry about it later I guess
 		while(invalid_number) {
 			
-			double validity_check = this.generator.nextDouble();
+			double validity_check = generator.nextDouble();
 			
 			double evaluation_at_t = evaluateSinusoidTime(mean, time, amplitude)/upperBound;
 			
@@ -177,7 +166,7 @@ public class Source implements CProcess
 				break;
 			}
 			
-			u = this.generator.nextDouble();
+			u = generator.nextDouble();
 			
 			final_value = -(1.0/upperBound)*Math.log(u);
 			

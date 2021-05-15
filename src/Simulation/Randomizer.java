@@ -6,7 +6,7 @@ public class Randomizer {
 	
 	/**
 	 * How many iterations of newton's method are used for each randomly generated number.
-	 * 20 is way too many, you can probably do fine with a lot less
+	 * 12 seems to be a good amount (not too slow, but still accurate)
 	 */
 	public static int ITERATIONS = 12;
 	

@@ -9,6 +9,8 @@ import java.util.Random;
  */
 public class Machine implements CProcess,ProductAcceptor
 {
+	public static boolean DEBUG = true;
+	
 	/** Product that is being handled  */
 	protected Product product;
 	/** Eventlist that will manage events */
@@ -35,7 +37,12 @@ public class Machine implements CProcess,ProductAcceptor
 	
 	// I'm making it static so that I can easily modify it later on
 	// That way each machine can easily have a different seed
-	static long seed = 0;
+	static long seed = System.currentTimeMillis();
+	
+	static {
+		System.out.println("seed used for Machine : "+seed);
+	}
+	
 	Random rand_generator = new Random(seed);
 
 	/**
@@ -62,15 +69,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*/
 	public Machine(Queue q, ProductAcceptor s, CEventList e, String n)
 	{
-		status='i';
-		queue=q;
-		sink=s;
-		eventlist=e;
-		name=n;
-		meanProcTime=30;
-		// Just assuming default var, just because
-		std = 1;
-		queue.askProduct(this); // this adds the machine to the reference list of the queue
+		this(q, s, e, n, 30);
 	}
 
 	/**
@@ -84,15 +83,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*/
 	public Machine(Queue q, ProductAcceptor s, CEventList e, String n, double m)
 	{
-		status='i';
-		queue=q;
-		sink=s;
-		eventlist=e;
-		name=n;
-		meanProcTime=m;
-		// I'll just assume standard variance
-		this.std = 1;
-		queue.askProduct(this);
+		this(q, s, e, n, m, 1);
 	}
 	
 	public Machine(Queue q, ProductAcceptor s, CEventList e, String n, double m, double var)
@@ -137,7 +128,7 @@ public class Machine implements CProcess,ProductAcceptor
 	public void execute(ProductType type, double tme)
 	{
 		// show arrival
-		System.out.println("Product finished at time = " + tme);
+		if (DEBUG) System.out.println("Product finished at time = " + tme);
 		// Remove product from system
 		product.stamp(tme,"Production complete",name);
 		sink.giveProduct(product);
@@ -177,7 +168,7 @@ public class Machine implements CProcess,ProductAcceptor
 	*	Start the handling of the current product with an exponentionally distributed processingtime with average 30
 	*	This time is placed in the eventlist
 	*/
-	private void startProduction(ProductType type)
+	protected void startProduction(ProductType type)
 	{
 		// generate duration
 		if(meanProcTime>0)

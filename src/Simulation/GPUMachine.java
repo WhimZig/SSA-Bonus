@@ -34,7 +34,8 @@ public class GPUMachine extends Machine {
 		queue.askProduct(this);
 	}
 	
-	private void startProduction(ProductType type)
+	@Override
+	protected void startProduction(ProductType type)
 	{
 		// generate duration
 		if(meanProcTime>0)

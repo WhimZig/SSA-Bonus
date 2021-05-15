@@ -1,6 +1,7 @@
 package Simulation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 /**
  *	A sink
  *	@author Joel Karel
@@ -8,6 +9,8 @@ import java.util.ArrayList;
  */
 public class Sink implements ProductAcceptor
 {
+	public static boolean DEBUG = true;
+	
 	/** All products are kept */
 	private ArrayList<Product> products;
 	/** All properties of products are kept */
@@ -19,6 +22,10 @@ public class Sink implements ProductAcceptor
 	private ArrayList<Double> regularDelay;
 	private ArrayList<Double> GPUDelay;
 	private ArrayList<Double> allDelays;
+	// starting time of jobs; in order to plot and test periodicity of jobs
+	private ArrayList<Double> regularTimes;
+	private ArrayList<Double> GPUTimes;
+	private ArrayList<Double> allTimes;
 	/** Counter to number products */
 	private int number;
 	/** Name of the sink */
@@ -42,6 +49,9 @@ public class Sink implements ProductAcceptor
 		regularDelay = new ArrayList<>();
 		GPUDelay = new ArrayList<>();
 		allDelays = new ArrayList<>();
+		regularTimes = new ArrayList<>();
+		GPUTimes = new ArrayList<>();
+		allTimes = new ArrayList<>();
 		number = 0;
 	}
 	
@@ -76,46 +86,19 @@ public class Sink implements ProductAcceptor
 			}
 		}
 		double delay = start - created;
-		boolean added = false;
 		// add it to the list so that it is ordered
 		if(p.prod==ProductType.GPU) {
-			for(int i=0; i<GPUDelay.size();i++) {
-				if(GPUDelay.get(i)>delay) {
-					GPUDelay.add(i, delay);
-					added = true;
-					break;
-				}
-			}
-			if(!added) {
-				GPUDelay.add(delay);
-			}
-			
+			GPUDelay.add(delay);
+			GPUTimes.add(start);
 			totalGPUDelay += delay;
 		}else {
-			for(int i=0; i<regularDelay.size();i++) {
-				if(regularDelay.get(i)>delay) {
-					regularDelay.add(i, delay);
-					added = true;
-					break;
-				}
-			}
-			if(!added) {
-				regularDelay.add(delay);
-			}
+			regularDelay.add(delay);
+			regularTimes.add(start);
 			totalDelay += delay;
 		}
-		added = false;
-		// Add to all delays
-		for(int i=0; i<allDelays.size();i++) {
-			if(allDelays.get(i)>delay) {
-				allDelays.add(i, delay);
-				added = true;
-				break;
-			}
-		}
-		if(!added) {
-			allDelays.add(delay);
-		}
+		allDelays.add(delay);
+		allTimes.add(start);
+		
 		print_delay();
 		return true;
 	}
@@ -155,21 +138,39 @@ public class Sink implements ProductAcceptor
 		tmp = stations.toArray(tmp);
 		return tmp;
 	}
+	
+	@SuppressWarnings("unchecked")
+	private double getPercentile(ArrayList<Double> list, double percent) {
+		if (percent < 0 || percent > 1) throw new AssertionError("percent must be within 0 and 1");
+		ArrayList<Double> sorted = (ArrayList<Double>) list.clone();
+		Collections.sort(sorted);
+		return sorted.get((int) Math.ceil(0.9*sorted.size())-1);
+	}
+	
+	// getters galore
+	public double getPercentileRegular(double percent) 	{ return getPercentile(regularDelay, percent); 	}
+	public double getPercentileGPU(double percent) 		{ return getPercentile(GPUDelay, percent); 		}
+	public double getPercentileAll(double percent) 		{ return getPercentile(allDelays, percent); 	}
+	public double getMeanRegular() 	{ return totalDelay / regularDelay.size(); 				}
+	public double getMeanGPU() 		{ return totalGPUDelay / GPUDelay.size(); 				}
+	public double getMeanAll() 		{ return (totalDelay+totalGPUDelay) / allDelays.size(); }
+	public ArrayList<Double> getRegularDelays() { return regularDelay; 	}
+	public ArrayList<Double> getGPUDelays() 	{ return GPUDelay; 		}
+	public ArrayList<Double> getAllDelays() 	{ return allDelays; 	}
+	public ArrayList<Double> getRegularTimes() 	{ return regularTimes; 	}
+	public ArrayList<Double> getGPUTimes() 		{ return GPUTimes; 		}
+	public ArrayList<Double> getAllTimes() 		{ return allTimes; 		}
+	
 	public void print_delay() {
-		System.out.println("Regular mean delay time - " + totalDelay/regularDelay.size());
-		System.out.println("GPU mean delay time - " + totalGPUDelay/GPUDelay.size());
-		System.out.println("Overall mean delay time - " + (totalDelay+totalGPUDelay)/(GPUDelay.size()+regularDelay.size()));
-		int reg = (int) Math.ceil(0.9*regularDelay.size())-1;
-		if(regularDelay.size()>0){
-			System.out.println("Regular 90th percentile delay time - " + regularDelay.get(reg));
-		}
-		int gpu = (int) Math.ceil(0.9*GPUDelay.size())-1;
-		if(GPUDelay.size()>0){
-			System.out.println("GPU 90th percentile delay time - " + GPUDelay.get(gpu));
-		}
-		int all = (int) Math.ceil(0.9*allDelays.size())-1;
-		if(allDelays.size()>0){
-			System.out.println("Overall 90th percentile delay time - " + allDelays.get(all));
-		}
+		if (!DEBUG) return;
+		System.out.println("Regular mean delay time - " + getMeanRegular());
+		System.out.println("GPU mean delay time - " + getMeanGPU());
+		System.out.println("Overall mean delay time - " + getMeanAll());
+		if(regularDelay.size()>0)
+			System.out.println("Regular 90th percentile delay time - " + getPercentileRegular(0.9));
+		if(GPUDelay.size()>0)
+			System.out.println("GPU 90th percentile delay time - " + getPercentileGPU(0.9));
+		if(allDelays.size()>0)
+			System.out.println("Overall 90th percentile delay time - " + getPercentileAll(0.9));
 	}
 }

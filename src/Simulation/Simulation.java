@@ -21,7 +21,8 @@ public class Simulation {
         /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    @SuppressWarnings("unchecked")
+	public static void main(String[] args) {
     	
     	/*
     	// Create an eventlist
@@ -90,34 +91,54 @@ public class Simulation {
     	QueueDistributor qd = new QueueDistributor(qlist);
     	
     	
-    	// Not sure if the interarrival time for the normal is correct
-    	// And for now it's assuming that it's just a stationary poisson process
-    	Source s = new Source(qd,l,"Source normal", 30, ProductType.Normal);
-    	Source sGPU = new Source(qd,l,"Source GPU", 360, ProductType.GPU);
+    	// sources don't need to be assigned to variables because they are linked to l and qd
+    	new Source(qd,l,"Source normal", 30, ProductType.Normal);
+    	new Source(qd,l,"Source GPU", 360, ProductType.GPU);
     	
     	
-    	// A sink
+    	// The Sink
     	Sink si = new Sink("Sink 1");
-    	// A machine
-    	Machine m1 = new Machine(q1,si,l,"Machine 1", 145, 42);
+    	// machines don't need to be assigned to variables because they are linked to l and the q's
+    	new Machine(q1,si,l,"Machine 1", 145, 42);
+    	new Machine(q2,si,l,"Machine 2", 145, 42);
+    	new Machine(q3,si,l,"Machine 3", 145, 42);
+    	new Machine(q4,si,l,"Machine 4", 145, 42);
+    	new Machine(q5,si,l,"Machine 5", 145, 42);
+    	new Machine(q6,si,l,"Machine 6", 145, 42);
     	
-    	Machine m2 = new Machine(q2,si,l,"Machine 2", 145, 42);
+    	new GPUMachine(gpuq1,si,l, "GPUMachine 1", 145, 42);
+    	new GPUMachine(gpuq2,si,l, "GPUMachine 2", 145, 42);
     	
-    	Machine m3 = new Machine(q3,si,l,"Machine 3", 145, 42);
-    	
-    	Machine m4 = new Machine(q4,si,l,"Machine 4", 145, 42);
-    	
-    	Machine m5 = new Machine(q5,si,l,"Machine 5", 145, 42);
-    	
-    	Machine m6 = new Machine(q6,si,l,"Machine 6", 145, 42);
-    	
-    	GPUMachine gpum1 = new GPUMachine(gpuq1,si,l, "GPUMachine 1", 145, 42);
-    	
-    	GPUMachine gpum2 = new GPUMachine(gpuq2,si,l, "GPUMachine 2", 145, 42);
-    	
+    	// debug off
+    	Sink.DEBUG = false;
+    	Source.DEBUG = false;
+    	Machine.DEBUG = false;
     	
     	// start the eventlist
-    	l.start(2000); // 2000 is maximum time
+    	l.start(20000); // 2000 is maximum time
+    	
+    	// collecting data for matlab:
+    	ArrayList<Double>[] lists = new ArrayList[] {si.getRegularDelays(), si.getGPUDelays(),
+    			si.getAllDelays(), si.getRegularTimes(), si.getGPUTimes(), si.getAllTimes()};
+    	String[] names = new String[]
+    			{"reg_delays", "gpu_delays", "all_delays", "reg_times", "gpu_times", "all_times"};
+    	
+    	// set to false if you don't want all that output
+    	boolean print_for_python_or_matlab = true;
+    	
+    	if (print_for_python_or_matlab)
+	    	for (int i=0; i < lists.length; i++) { // CANADA uses "." as decimal seperator
+	    		System.out.format(Locale.CANADA, "%s = [%e", names[i], lists[i].get(0));
+	    		for (int k=1; k < lists[i].size(); k++)
+	    			System.out.format(Locale.CANADA, ", %e", lists[i].get(k));
+	    		System.out.println("];");
+	    	}
+    	
+    	System.out.format("Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
+    	"Overall mean delay time - %.3f\nRegular 90th percentile delay time - %.3f\n"+
+    	"GPU 90th percentile delay time - %.3f\nAll 90th percentile delay time - %.3f\n",
+    			si.getMeanRegular(), si.getMeanGPU(), si.getMeanAll(),
+    			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));
     	
     }
     
