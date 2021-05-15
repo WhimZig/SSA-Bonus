@@ -47,7 +47,7 @@ public class GPUQueue extends Queue {
 			}
 			else
 			{
-				// Nick: So this means that the machine is free?
+				// So this means that the machine is free?
 				requests.add(machine);
 				return false; // queue request
 			}

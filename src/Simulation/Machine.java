@@ -1,6 +1,6 @@
 package Simulation;
 
-
+import java.util.Random;
 
 /**
  *	Machine in a factory
@@ -10,25 +10,48 @@ package Simulation;
 public class Machine implements CProcess,ProductAcceptor
 {
 	/** Product that is being handled  */
-	private Product product;
+	protected Product product;
 	/** Eventlist that will manage events */
-	private final CEventList eventlist;
+	protected final CEventList eventlist;
 	/** Queue from which the machine has to take products */
-	private Queue queue;
+	protected Queue queue;
 	/** Sink to dump products */
 	ProductAcceptor sink;
 	/** Status of the machine (b=busy, i=idle) */
-	private char status;
+	protected char status;
 	/** Machine name */
-	private final String name;
+	protected final String name;
 	/** Mean processing time */
-	private double meanProcTime;
+	protected double meanProcTime;
 	/** Processing times (in case pre-specified) */
-	private double[] processingTimes;
+	protected double[] processingTimes;
 	/** Processing time iterator */
-	private int procCnt;
+	protected int procCnt;
 	
+	/** 
+	 * Standard deviation
+	 */
+	protected double std;
+	
+	// I'm making it static so that I can easily modify it later on
+	// That way each machine can easily have a different seed
+	static long seed = 0;
+	Random rand_generator = new Random(seed);
 
+	/**
+	 * Constructor
+	 * 	Idea behind it's existence is just to allow the GPU machine to have a default way of using it
+	 * 	Shouldn't really be used by itself, as it's worthless
+	 * @param e
+	 * @param name
+	 */
+	
+	public Machine(CEventList e, String name) {
+		this.eventlist = e;
+		this.name = name;
+	}
+	
+	
 	/**
 	*	Constructor
 	*        Service times are exponentially distributed with mean 30
@@ -45,6 +68,8 @@ public class Machine implements CProcess,ProductAcceptor
 		eventlist=e;
 		name=n;
 		meanProcTime=30;
+		// Just assuming default var, just because
+		std = 1;
 		queue.askProduct(this); // this adds the machine to the reference list of the queue
 	}
 
@@ -65,6 +90,20 @@ public class Machine implements CProcess,ProductAcceptor
 		eventlist=e;
 		name=n;
 		meanProcTime=m;
+		// I'll just assume standard variance
+		this.std = 1;
+		queue.askProduct(this);
+	}
+	
+	public Machine(Queue q, ProductAcceptor s, CEventList e, String n, double m, double var)
+	{
+		status='i';
+		queue=q;
+		sink=s;
+		eventlist=e;
+		name=n;
+		meanProcTime=m;
+		this.std = var;
 		queue.askProduct(this);
 	}
 	
@@ -143,7 +182,7 @@ public class Machine implements CProcess,ProductAcceptor
 		// generate duration
 		if(meanProcTime>0)
 		{
-			double duration = drawRandomExponential(meanProcTime);
+			double duration = drawRandomNormal(meanProcTime, std);
 			// Create a new event in the eventlist
 			double tme = eventlist.getTime();
 			eventlist.add(this,type,tme+duration); //target,type,time
@@ -173,6 +212,18 @@ public class Machine implements CProcess,ProductAcceptor
 		// Convert it into a exponentially distributed random variate with mean 33
 		double res = -mean*Math.log(u);
 		return res;
+	}
+	
+	// I modified it to guarantee no values less than 1
+	// As that's required by the general system
+	// Not the best implementation, but it works
+	protected double drawRandomNormal(double mean, double std) {
+		double val = mean + rand_generator.nextGaussian()*std;
+		if (val < 1) {
+			val = 1.0;
+		}
+		
+		return val;
 	}
 
 }

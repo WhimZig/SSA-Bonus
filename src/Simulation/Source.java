@@ -79,6 +79,17 @@ public class Source implements CProcess
 		// put first event in list for initialization
 		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
 	}
+	
+	public Source(ProductAcceptor q,CEventList l,String n, double m, ProductType e)
+	{
+		list = l;
+		queue = q;
+		name = n;
+		meanArrTime=m;
+		prod = e;
+		// put first event in list for initialization
+		list.add(this,prod,drawRandomExponential(meanArrTime)); //target,type,time
+	}
 
 	/**
 	*	Constructor, creates objects
@@ -104,7 +115,7 @@ public class Source implements CProcess
 	public void execute(ProductType type, double tme)
 	{
 		// show arrival
-		System.out.println("Arrival at time = " + tme);
+		System.out.println("Arrival at time = " + tme + " of product " + type);
 		// give arrived product to queue
 		Product p = new Product(type);
 		p.stamp(tme,"Creation",name);
