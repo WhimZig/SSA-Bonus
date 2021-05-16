@@ -7,6 +7,10 @@
 package Simulation;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.*;
 
 public class Simulation {
@@ -106,8 +110,8 @@ public class Simulation {
     	new Machine(q5,si,l,"Machine 5", 145, 42);
     	new Machine(q6,si,l,"Machine 6", 145, 42);
     	
-    	new GPUMachine(gpuq1,si,l, "GPUMachine 1", 240, 50);
-    	new GPUMachine(gpuq2,si,l, "GPUMachine 2", 240, 50);
+    	new GPUMachine(gpuq1,si,l, "GPUMachine 1", 145, 42, 240, 50);
+    	new GPUMachine(gpuq2,si,l, "GPUMachine 2", 145, 42, 240, 50);
     	
     	// debug off
     	Sink.DEBUG = false;
@@ -115,7 +119,7 @@ public class Simulation {
     	Machine.DEBUG = false;
     	
     	// start the eventlist
-    	double max_time = 20000;
+    	double max_time = 2000000;
     	l.start(max_time);
     	
     	// collecting data for matlab:
@@ -126,13 +130,31 @@ public class Simulation {
     	
     	// set to false if you don't want all that output
     	boolean print_for_python_or_matlab = true;
+
+    	// for data storage
+    	String run_name = "data";
+    	
+    	// set to false to print results rather than storing them
+    	boolean save_data = true;
+    	
+    	PrintStream out = System.out;
+    	if (save_data) {
+	    	File folder = new File("data_output");
+	    	folder.mkdirs();
+	    	List<String> file_names = List.of(folder.listFiles()).stream().map(f -> f.getName()).collect(Collectors.toList());
+	    	int index = 1;
+	    	while (file_names.contains(String.format("%s%03d.txt", run_name, index))) index++;
+			try {
+				out = new PrintStream(new File(String.format("data_output/%s%03d.txt", run_name, index)));
+			} catch (FileNotFoundException e) { e.printStackTrace(); System.exit(-1); }
+    	}
     	
     	if (print_for_python_or_matlab)
 	    	for (int i=0; i < lists.length; i++) { // CANADA uses "." as decimal seperator
-	    		System.out.format(Locale.CANADA, "%s = [%e", names[i], lists[i].get(0));
+	    		out.format(Locale.CANADA, "%s = [%e", names[i], lists[i].get(0));
 	    		for (int k=1; k < lists[i].size(); k++)
-	    			System.out.format(Locale.CANADA, ", %e", lists[i].get(k));
-	    		System.out.println("];");
+	    			out.format(Locale.CANADA, ", %e", lists[i].get(k));
+	    		out.println("];");
 	    	}
     	
     	System.out.format(Locale.CANADA, "Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
@@ -140,6 +162,7 @@ public class Simulation {
     	"GPU 90th percentile delay time - %.3f\nAll 90th percentile delay time - %.3f\n",
     			si.getMeanRegular(), si.getMeanGPU(), si.getMeanAll(),
     			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));
+    	
     	
     }
     

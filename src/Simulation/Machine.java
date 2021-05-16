@@ -174,9 +174,13 @@ public class Machine implements CProcess,ProductAcceptor
 		if(meanProcTime>0)
 		{
 			double duration = drawRandomNormal(meanProcTime, std);
+			if (duration < 1) {
+				System.out.format("illegal service time of %e minutes\n", duration);
+				duration = 1;
+			}
 			// Create a new event in the eventlist
-			double tme = eventlist.getTime();
-			eventlist.add(this,type,tme+duration); //target,type,time
+			double time = eventlist.getTime();
+			eventlist.add(this,type,time+duration); //target,type,time
 			// set status to busy
 			status='b';
 		}

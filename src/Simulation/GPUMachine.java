@@ -8,19 +8,6 @@ public class GPUMachine extends Machine {
 	double meanGPUTime;
 	double stdGPU;
 	
-	public GPUMachine(Queue q, ProductAcceptor s, CEventList e, String n, double m, double var)
-	{
-		super(e,n);
-		status='i';
-		queue=q;
-		sink=s;
-		meanProcTime=m;
-		this.std = var;
-		this.meanGPUTime = m;
-		this.stdGPU = var;
-		queue.askProduct(this);
-	}
-	
 	public GPUMachine(Queue q, ProductAcceptor s, CEventList e, String n, double m, double var, double gpum, double gpuvar)
 	{
 		super(e, n);
@@ -45,7 +32,6 @@ public class GPUMachine extends Machine {
 			if(type == ProductType.Normal) {
 				duration = drawRandomNormal(meanProcTime, std);
 			} else {
-				
 				duration = drawRandomNormal(meanGPUTime, stdGPU);
 			}
 			
