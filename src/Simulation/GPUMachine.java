@@ -16,8 +16,8 @@ public class GPUMachine extends Machine {
 		sink=s;
 		meanProcTime=m;
 		this.std = var;
-		this.meanGPUTime = 240;
-		this.stdGPU = 50;
+		this.meanGPUTime = m;
+		this.stdGPU = var;
 		queue.askProduct(this);
 	}
 	

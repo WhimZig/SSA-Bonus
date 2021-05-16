@@ -106,8 +106,8 @@ public class Simulation {
     	new Machine(q5,si,l,"Machine 5", 145, 42);
     	new Machine(q6,si,l,"Machine 6", 145, 42);
     	
-    	new GPUMachine(gpuq1,si,l, "GPUMachine 1", 145, 42);
-    	new GPUMachine(gpuq2,si,l, "GPUMachine 2", 145, 42);
+    	new GPUMachine(gpuq1,si,l, "GPUMachine 1", 240, 50);
+    	new GPUMachine(gpuq2,si,l, "GPUMachine 2", 240, 50);
     	
     	// debug off
     	Sink.DEBUG = false;
@@ -115,7 +115,8 @@ public class Simulation {
     	Machine.DEBUG = false;
     	
     	// start the eventlist
-    	l.start(20000); // 2000 is maximum time
+    	double max_time = 20000;
+    	l.start(max_time);
     	
     	// collecting data for matlab:
     	ArrayList<Double>[] lists = new ArrayList[] {si.getRegularDelays(), si.getGPUDelays(),
@@ -134,7 +135,7 @@ public class Simulation {
 	    		System.out.println("];");
 	    	}
     	
-    	System.out.format("Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
+    	System.out.format(Locale.CANADA, "Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
     	"Overall mean delay time - %.3f\nRegular 90th percentile delay time - %.3f\n"+
     	"GPU 90th percentile delay time - %.3f\nAll 90th percentile delay time - %.3f\n",
     			si.getMeanRegular(), si.getMeanGPU(), si.getMeanAll(),

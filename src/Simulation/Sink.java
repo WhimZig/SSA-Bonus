@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 /**
  *	A sink
- *	@author Joel Karel
+ *	@author Joel Karel, Nicolas, Simi, Pascal
  *	@version %I%, %G%
  */
 public class Sink implements ProductAcceptor
