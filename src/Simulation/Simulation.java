@@ -118,6 +118,13 @@ public class Simulation {
     	Source.DEBUG = false;
     	Machine.DEBUG = false;
     	
+    	// set to false if you don't want all that output
+    	boolean print_for_python_or_matlab = true;
+    	// set to true to store results rather than printing them
+    	boolean save_data = true;
+    	// where to store data (if save_data is true)
+    	String run_name = "data";
+    	
     	// start the eventlist
     	double max_time = 2000000;
     	l.start(max_time);
@@ -128,27 +135,7 @@ public class Simulation {
     	String[] names = new String[]
     			{"reg_delays", "gpu_delays", "all_delays", "reg_times", "gpu_times", "all_times"};
     	
-    	// set to false if you don't want all that output
-    	boolean print_for_python_or_matlab = true;
-
-    	// for data storage
-    	String run_name = "data";
-    	
-    	// set to false to print results rather than storing them
-    	boolean save_data = true;
-    	
-    	PrintStream out = System.out;
-    	if (save_data) {
-	    	File folder = new File("data_output");
-	    	folder.mkdirs();
-	    	List<String> file_names = List.of(folder.listFiles()).stream().map(f -> f.getName()).collect(Collectors.toList());
-	    	int index = 1;
-	    	while (file_names.contains(String.format("%s%03d.txt", run_name, index))) index++;
-			try {
-				out = new PrintStream(new File(String.format("data_output/%s%03d.txt", run_name, index)));
-			} catch (FileNotFoundException e) { e.printStackTrace(); System.exit(-1); }
-    	}
-    	
+    	PrintStream out = setup_writer(save_data, run_name);
     	if (print_for_python_or_matlab)
 	    	for (int i=0; i < lists.length; i++) { // CANADA uses "." as decimal seperator
 	    		out.format(Locale.CANADA, "%s = [%e", names[i], lists[i].get(0));
@@ -164,6 +151,21 @@ public class Simulation {
     			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));
     	
     	
+    }
+    
+    private static PrintStream setup_writer(boolean save_data, String run_name) {
+    	PrintStream out = System.out;
+    	if (save_data) {
+	    	File folder = new File("data_output");
+	    	folder.mkdirs();
+	    	List<String> file_names = List.of(folder.listFiles()).stream().map(f -> f.getName()).collect(Collectors.toList());
+	    	int index = 1;
+	    	while (file_names.contains(String.format("%s%03d.txt", run_name, index))) index++;
+			try {
+				out = new PrintStream(new File(String.format("data_output/%s%03d.txt", run_name, index)));
+			} catch (FileNotFoundException e) { e.printStackTrace(); System.exit(-1); }
+    	}
+    	return out;
     }
     
 }

@@ -7,7 +7,6 @@ public class GPUQueue extends Queue {
 	private ArrayList<Product> priority;
 	
 	public GPUQueue() {
-		// TODO Auto-generated constructor stub
 		super();
 		priority = new ArrayList<>();
 	}

@@ -4,15 +4,41 @@ import java.util.ArrayList;
 
 public class QueueDistributor implements ProductAcceptor {
 	
+	public static final int DEFAULT_ROUTINE = 0;
+	public static final int TWO_QUEUES = 1;
+	
 	ArrayList<Queue> queues;
+	Queue rQueue;
+	GPUQueue gQueue;
+	
+	private final int routine;
 	
 	public QueueDistributor(ArrayList<Queue> queues) {
 		this.queues = queues;
+		routine = DEFAULT_ROUTINE;
+	}
+	public QueueDistributor(Queue regular_queue, GPUQueue gpu_queue) {
+		rQueue = regular_queue;
+		gQueue = gpu_queue;
+		routine = TWO_QUEUES;
 	}
 
 	@Override
 	public boolean giveProduct(Product p) {
 		
+		switch(routine) {
+		case (TWO_QUEUES)	: two_queue_routine(p); break;
+		default				: default_routine(p);
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Give the product to the smallest queue it can go in;
+	 * GPU queue size is the sum of both sub-queues
+	 */
+	public void default_routine(Product p) {
 		if(p.prod == ProductType.GPU) {
 			int small = Integer.MAX_VALUE;
 			Queue correct = null;
@@ -40,10 +66,14 @@ public class QueueDistributor implements ProductAcceptor {
 				}
 			}
 			correct.giveProduct(p);
-		
 		}
-		
-		return true;
+	}
+	
+	public void two_queue_routine(Product p) {
+		switch (p.prod) {
+		case GPU	: gQueue.giveProduct(p); break;
+		default 	: rQueue.giveProduct(p);
+		}
 	}
 	
 }
