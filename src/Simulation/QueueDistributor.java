@@ -16,6 +16,7 @@ public class QueueDistributor implements ProductAcceptor {
 	GPUQueue gQueue;
 	
 	// For smart-queue state
+	ArrayList<Machine> regs;
 	ArrayList<GPUMachine> gpus;
 	
 	private final int routine;
@@ -29,10 +30,11 @@ public class QueueDistributor implements ProductAcceptor {
 		gQueue = gpu_queue;
 		routine = TWO_QUEUES;
 	}
-	public QueueDistributor(Queue regular_queue, GPUQueue gpu_queue, ArrayList<GPUMachine> gpus) {
+	public QueueDistributor(Queue regular_queue, GPUQueue gpu_queue, ArrayList<Machine> reg_machines, ArrayList<GPUMachine> gpu_machines) {
 		rQueue = regular_queue;
 		gQueue = gpu_queue;
-		this.gpus = new ArrayList<>(gpus);
+		regs = new ArrayList<>(reg_machines);
+		gpus = new ArrayList<>(gpu_machines);
 		routine = SMART_QUEUE;
 	}
 
@@ -94,10 +96,9 @@ public class QueueDistributor implements ProductAcceptor {
 		switch (p.prod) {
 		case GPU	: gQueue.giveProduct(p); break;
 		default 	: 
-			boolean give_to_gpu = false;
-			for (GPUMachine m : gpus) if (m.isIdle()) give_to_gpu = true;
-			if (give_to_gpu) gQueue.giveProduct(p);
-			else rQueue.giveProduct(p);
+			for (Machine m : regs) if (m.isIdle()) { rQueue.giveProduct(p); return; }
+			for (GPUMachine m : gpus) if (m.isIdle()) { gQueue.giveProduct(p); return; }
+			rQueue.giveProduct(p);
 		}
 	}
 	

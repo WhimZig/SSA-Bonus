@@ -136,11 +136,12 @@ public class Simulation {
     	// The Sink
     	Sink si = new Sink("Sink 1");
     	// machines don't need to be assigned to variables because they are linked to l and the q's
-    	for (int i=0; i < num_CPU_cores; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
+    	ArrayList<Machine> regs = new ArrayList<>();
+    	for (int i=0; i < num_CPU_cores; i++) regs.add(new Machine(RQ, si, l, "Machine "+(i+1), 145, 42));
     	ArrayList<GPUMachine> gpus = new ArrayList<>();
     	for (int i=0; i < num_GPU_cores; i++) gpus.add(new GPUMachine(GQ, si, l, "GPUMachine "+(i+1), 145, 42, 240, 50));
     	
-    	QueueDistributor qd = new QueueDistributor(RQ, GQ, gpus);
+    	QueueDistributor qd = new QueueDistributor(RQ, GQ, regs, gpus);
     	attach_source(l, qd);
     	
     	start(l, si, max_time, DEBUG, "smart");
