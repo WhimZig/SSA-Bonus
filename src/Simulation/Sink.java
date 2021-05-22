@@ -149,10 +149,17 @@ public class Sink implements ProductAcceptor
 	
 	// getters galore
 	public double getPercentileRegular(double percent) 	{ return getPercentile(regularDelay, percent); 	}
-	public double getPercentileGPU(double percent) 		{ return getPercentile(GPUDelay, percent); 		}
+	public double getPercentileGPU(double percent) 		{
+		double res = getPercentile(GPUDelay, percent);
+		return res;
+		}
 	public double getPercentileAll(double percent) 		{ return getPercentile(allDelays, percent); 	}
 	public double getMeanRegular() 	{ return totalDelay / regularDelay.size(); 				}
-	public double getMeanGPU() 		{ return totalGPUDelay / GPUDelay.size(); 				}
+	
+	public double getMeanGPU() 		{
+		return totalGPUDelay / GPUDelay.size();
+		}
+	
 	public double getMeanAll() 		{ return (totalDelay+totalGPUDelay) / allDelays.size(); }
 	public ArrayList<Double> getRegularDelays() { return regularDelay; 	}
 	public ArrayList<Double> getGPUDelays() 	{ return GPUDelay; 		}
