@@ -17,12 +17,6 @@ import java.util.*;
 
 public class Simulation {
 	
-	public static final int SINK_DEBUG 		= 1 << 0; // 1
-	public static final int SOURCE_DEBUG 	= 1 << 1; // 2
-	public static final int MACHINE_DEBUG 	= 1 << 2; // 4
-	public static final int GET_RESULTS 	= 1 << 3; // 8
-	public static final int STORE_TO_FILE 	= 1 << 4; // 16
-	
 	public static void main(String[] args) {
 		int size = 1000;
 		double time = 10080*4;
@@ -81,18 +75,20 @@ public class Simulation {
     	// A queue for the machine
     	
     	ArrayList<Queue> qlist = new ArrayList<>();
-    	for (int i=0; i < num_CPU_cores; i++) qlist.add(new Queue());
-    	for (int i=0; i < num_GPU_cores; i++) qlist.add(new GPUQueue());
+    	for (int i=0; i < 6; i++) qlist.add(new Queue());
+    	for (int i=0; i < 2; i++) qlist.add(new GPUQueue());
     	
     	QueueDistributor qd = new QueueDistributor(qlist);
-    	attach_source(l, qd);
+    	
+    	// sources don't need to be assigned to variables because they are linked to l and qd
+    	new Source(qd,l,"Source normal", 30, ProductType.Normal);
+    	new Source(qd,l,"Source GPU", 360, ProductType.GPU);
     	
     	// The Sink
     	Sink si = new Sink("Sink 1");
     	// machines don't need to be assigned to variables because they are linked to l and the q's
-    	for (int i=0; i < num_CPU_cores; i++) new Machine(qlist.get(i), si, l, "Machine "+(i+1), 145, 42);
-    	for (int i=num_CPU_cores; i < num_cores; i++) 
-    		new GPUMachine(qlist.get(i), si, l, "GPUMachine "+(i-num_CPU_cores+1), 145, 42, 240, 50);
+    	for (int i=0; i < 6; i++) new Machine(qlist.get(i), si, l, "Machine "+(i+1), 145, 42);
+    	for (int i=6; i < 8; i++) new GPUMachine(qlist.get(i), si, l, "GPUMachine "+(i-5), 145, 42, 240, 50);
     	
     	// debug off
     	Sink.DEBUG = false;
@@ -132,19 +128,13 @@ public class Simulation {
 		// The Sink
     	Sink si = new Sink("Sink 1");
     	// machines don't need to be assigned to variables because they are linked to l and the q's
-    	for (int i=0; i < num_CPU_cores; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
-    	for (int i=0; i < num_GPU_cores; i++) new GPUMachine(GQ, si, l, "GPUMachine "+(i+1), 145, 42, 240, 50);
+    	for (int i=0; i < 6; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
+    	for (int i=6; i < 8; i++) new GPUMachine(GQ, si, l, "GPUMachine "+(i-5), 145, 42, 240, 50);
     	
-    	start(l, si, max_time, DEBUG, "seperate");
-    }
-	
-	private static void start(CEventList l, Sink si, double max_time, int DEBUG, String file_name) {
-		// debug config
-    	Sink.DEBUG = (DEBUG & SINK_DEBUG) > 0;
-    	Source.DEBUG = (DEBUG & SOURCE_DEBUG) > 0;
-    	Machine.DEBUG = (DEBUG & MACHINE_DEBUG) > 0;
-    	boolean get_results = (DEBUG & GET_RESULTS) > 0;
-    	boolean save_data = (DEBUG & STORE_TO_FILE) > 0;
+    	// debug off
+    	Sink.DEBUG = false;
+    	Source.DEBUG = false;
+    	Machine.DEBUG = false;
     	
     	// set to false if you don't want all that output
     	//boolean print_for_python_or_matlab = true;
@@ -170,8 +160,6 @@ public class Simulation {
     			si.getAllDelays(), si.getRegularTimes(), si.getGPUTimes(), si.getAllTimes()};
     	String[] names = new String[]
     			{"reg_delays", "gpu_delays", "all_delays", "reg_times", "gpu_times", "all_times"};
-    	
-    	System.out.format("\nfinished simulation after %d iterations\n", lists[5].size());
     	
     	PrintStream out = setup_writer(store_to_file, file_name);
     	if (get_py_or_mat_data)
