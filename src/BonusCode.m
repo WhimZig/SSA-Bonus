@@ -147,6 +147,83 @@ smart_upper_bounds_percentile_delays = smart_mean_percentile_delays+t_val*(sqrt(
 smart_upper_bounds_percentile_gpu_delays = smart_mean_gpu_percentile_delays+t_val*(sqrt(smart_var_gpu_percentile_delays/1000));
 smart_upper_bounds_percentile_regular_delays = smart_mean_regular_percentile_delays+t_val*(sqrt(smart_var_regular_percentile_delays/1000));
 
+%% Comparing the distributions
+% Because the means and variances are already given, it makes part of the
+% calculations easier. Because of that, we'll be doing a paired_t
+% confidence interval. So we need to create the respective Zs for each of
+% the possible pairs.
+
+% There's a lot of calculations that can be done with this, but for the
+% sake of making things a little easier we will focus mainly on the average
+% of the entire system. The other calculations will be done, but the
+% variables will overlap at some point to help with code reuse (and to
+% reduce the pretty high number of variables already present in the
+% script), so it won't be as readable.
+
+z_def_sep = default_all_delays - mod_all_delays;
+z_def_smart = default_all_delays - smart_all_delays;
+z_sep_smart = mod_all_delays - smart_all_delays;
+
+% Because of bonferroni inequality, our confidence needs to be higher than
+% 95%. We'll be doing 9 comparisons total, so for the sake of being
+% thorough we will use a confidence interval of 0.005.
+t_val = tinv(0.995,999);
+
+% No we get the confidence interval for each of the z values
+% Also, we divide the var given by matlab by n because the matlab version
+% only divides by n-1. For the formula in the book, we require a division
+% by n as well.
+z_ds_bounds = [mean(z_def_sep) - t_val*sqrt(var(z_def_sep)/length(z_def_sep)), mean(z_def_sep) + t_val*sqrt(var(z_def_sep)/length(z_def_sep))];
+z_dsm_bounds = [mean(z_def_smart) - t_val*sqrt(var(z_def_smart)/length(z_def_smart)), mean(z_def_smart) + t_val*sqrt(var(z_def_smart)/length(z_def_smart))];
+z_ssm_bounds = [mean(z_sep_smart) - t_val*sqrt(var(z_sep_smart)/length(z_sep_smart)), mean(z_sep_smart) + t_val*sqrt(var(z_sep_smart)/length(z_sep_smart))];
+
+% z_ds_bounds = 30.2047   32.9243
+% z_dsm_bounds = 64.4348   65.8911
+% z_ssm_bounds = 32.1071   35.0898
+
+% None of the values are even close to 0, so we can say with 95% confidence
+% that none of the distributions come from the a system with the same mean.
+
+% In the following lines the tests for various attributes. The values 
+% aren't going to be printed properly, but they'll be added in the comments
+
+z_def_sep_vals = default_gpu_delays - mod_gpu_delays;
+z_def_smart_vals = default_gpu_delays - smart_gpu_delays;
+z_sep_smart_vals = mod_gpu_delays - smart_gpu_delays;
+
+z_ds_vals_bounds = [mean(z_def_sep_vals) - t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals)), mean(z_def_sep_vals) + t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals))];
+z_dsm_vals_bounds = [mean(z_def_smart_vals) - t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals)), mean(z_def_smart_vals) + t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals))];
+z_ssm_vz_def_sep_vals = default_gpu_delays - mod_gpu_delays;
+z_def_smart_vals = default_gpu_delays - smart_gpu_delays;
+z_sep_smart_vals = mod_gpu_delays - smart_gpu_delays;
+
+z_ds_vals_bounds = [mean(z_def_sep_vals) - t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals)), mean(z_def_sep_vals) + t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals))];
+z_dsm_vals_bounds = [mean(z_def_smart_vals) - t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals)), mean(z_def_smart_vals) + t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals))];
+z_ssm_vals_bounds = [mean(z_sep_smart_vals) - t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals)), mean(z_sep_smart_vals) + t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals))];als_bounds = [mean(z_sep_smart_vals) - t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals)), mean(z_sep_smart_vals) + t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals))];
+
+% z_ds_vals_bounds = 57.8049   60.0220
+% z_dsm_vals_bounds = 25.1105   27.8834
+% z_ssm_vals_bounds = -33.6683  -31.1648
+
+% So the GPU distributions don't have overlapping distributions, so we have
+% 95% confidence that they come from different means.
+
+% Now for the normal products:
+z_def_sep_vals = default_regular_delays - mod_regular_delays;
+z_def_smart_vals = default_regular_delays - smart_regular_delays;
+z_sep_smart_vals = mod_regular_delays - smart_regular_delays;
+
+z_ds_vals_bounds = [mean(z_def_sep_vals) - t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals)), mean(z_def_sep_vals) + t_val*sqrt(var(z_def_sep_vals)/length(z_def_sep_vals))];
+z_dsm_vals_bounds = [mean(z_def_smart_vals) - t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals)), mean(z_def_smart_vals) + t_val*sqrt(var(z_def_smart_vals)/length(z_def_smart_vals))];
+z_ssm_vals_bounds = [mean(z_sep_smart_vals) - t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals)), mean(z_sep_smart_vals) + t_val*sqrt(var(z_sep_smart_vals)/length(z_sep_smart_vals))];
+
+% z_ds_vals_bounds = 27.8476   30.7756
+% z_dsm_vals_bounds = 67.9108   69.4172
+% z_ssm_vals_bounds = 37.7538   40.9509
+
+% So we can say with 95% certainty that these distributions have different
+% means.
+
 %% Extra stuff
 % The "main" analysis was beforehand, but here we're doing some extra
 % methods so that we can extract a bit more information from the given
