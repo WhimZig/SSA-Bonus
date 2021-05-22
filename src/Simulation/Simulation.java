@@ -17,6 +17,12 @@ import java.util.*;
 
 public class Simulation {
 	
+	public static final int SINK_DEBUG 		= 1 << 0; // 1
+	public static final int SOURCE_DEBUG 	= 1 << 1; // 2
+	public static final int MACHINE_DEBUG 	= 1 << 2; // 4
+	public static final int GET_RESULTS 	= 1 << 3; // 8
+	public static final int STORE_TO_FILE 	= 1 << 4; // 16
+	
 	public static void main(String[] args) {
 		int size = 1000;
 		double time = 10080*4;
@@ -67,115 +73,101 @@ public class Simulation {
 				percentile_90_gpu_delay, percentile_90_regular_delay, "output_routine_0.txt");
 		
     }
-    
-	public static double[] simulate_routine_0(double time) {
-		
-		
+	
+	public static double[] simulate_default(double max_time) {
+		return simulate_default(max_time, 0);
+	}
+	public static double[] simulate_default(double max_time, int DEBUG) {
+		return simulate_default(6, 2, max_time, DEBUG);
+	}
+	public static double[] simulate_default(int num_CPU_cores, int num_GPU_cores, double max_time, int DEBUG) {
+		int num_cores = num_CPU_cores + num_GPU_cores;
     	CEventList l = new CEventList();
     	// A queue for the machine
     	
     	ArrayList<Queue> qlist = new ArrayList<>();
-    	for (int i=0; i < 6; i++) qlist.add(new Queue());
-    	for (int i=0; i < 2; i++) qlist.add(new GPUQueue());
+    	for (int i=0; i < num_CPU_cores; i++) qlist.add(new Queue());
+    	for (int i=0; i < num_GPU_cores; i++) qlist.add(new GPUQueue());
     	
     	QueueDistributor qd = new QueueDistributor(qlist);
-    	
-    	// sources don't need to be assigned to variables because they are linked to l and qd
-    	new Source(qd,l,"Source normal", 30, ProductType.Normal);
-    	new Source(qd,l,"Source GPU", 360, ProductType.GPU);
+    	attach_source(l, qd);
     	
     	// The Sink
     	Sink si = new Sink("Sink 1");
     	// machines don't need to be assigned to variables because they are linked to l and the q's
-    	for (int i=0; i < 6; i++) new Machine(qlist.get(i), si, l, "Machine "+(i+1), 145, 42);
-    	for (int i=6; i < 8; i++) new GPUMachine(qlist.get(i), si, l, "GPUMachine "+(i-5), 145, 42, 240, 50);
+    	for (int i=0; i < num_CPU_cores; i++) new Machine(qlist.get(i), si, l, "Machine "+(i+1), 145, 42);
+    	for (int i=num_CPU_cores; i < num_cores; i++) 
+    		new GPUMachine(qlist.get(i), si, l, "GPUMachine "+(i-num_CPU_cores+1), 145, 42, 240, 50);
     	
-    	// debug off
-    	Sink.DEBUG = false;
-    	Source.DEBUG = false;
-    	Machine.DEBUG = false;
+    	start(l, si, max_time, DEBUG, "default");
     	
-    	// set to false if you don't want all that output
-    	/*boolean print_for_python_or_matlab = true;
-    	// set to true to store results rather than printing them
-    	boolean save_data = true;
-    	*/
-    	// start the eventlist
-    	double max_time = time;
-    	l.start(max_time);
-    	
-    	//data_collect(si, print_for_python_or_matlab, save_data, "data");
     	double[] results = mean_and_percentile_collect(si);
     	
 		return results;
+    }
+	
+	public static double[] simulate_seperate(double max_time) {
+		return simulate_seperate(max_time, 0);
+	}
+	public static double[] simulate_seperate(double max_time, int DEBUG) {
+		return simulate_seperate(6, 2, max_time, DEBUG);
+	}
+	public static double[] simulate_seperate(int num_CPU_cores, int num_GPU_cores, double max_time, int DEBUG) {
+		CEventList l = new CEventList();
+    	// A queue for the machine
+    	
+    	Queue RQ = new Queue();
+    	GPUQueue GQ = new GPUQueue();
+    	
+    	QueueDistributor qd = new QueueDistributor(RQ, GQ);
+    	attach_source(l, qd);
+    	
+    	// The Sink
+    	Sink si = new Sink("Sink 1");
+    	// machines don't need to be assigned to variables because they are linked to l and the q's
+    	for (int i=0; i < num_CPU_cores; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
+    	for (int i=0; i < num_GPU_cores; i++) new GPUMachine(GQ, si, l, "GPUMachine "+(i+1), 145, 42, 240, 50);
+    	
+    	start(l, si, max_time, DEBUG, "seperate");
+    	
+    	double[] results = mean_and_percentile_collect(si);
+    	
+		return results;
+    }
+	
+	private static void start(CEventList l, Sink si, double max_time, int DEBUG, String file_name) {
+		// debug config
+    	Sink.DEBUG = (DEBUG & SINK_DEBUG) > 0;
+    	Source.DEBUG = (DEBUG & SOURCE_DEBUG) > 0;
+    	Machine.DEBUG = (DEBUG & MACHINE_DEBUG) > 0;
+    	boolean get_results = (DEBUG & GET_RESULTS) > 0;
+    	boolean save_data = (DEBUG & STORE_TO_FILE) > 0;
+    	
+    	// start the eventlist
+    	l.start(max_time);
+    	
+    	// uncomment this to run data collection for EACH job:
+    	//FullDataCollect.data_collect(si, get_results, save_data, file_name);
+	}
+	
+	private static void attach_source(CEventList l, ProductAcceptor qd) {
+		// sources don't need to be assigned to variables because they are linked to l and qd
+    	// rates are given in "per hour", convert to "per minute" by taking '/60'
+    	// period is given in hours, so we multiply that by 60 to get it in minutes
+    	new Source(qd,l,"Source normal", 2./60, 0.8/60, 24.*60);
+    	new Source(qd,l,"Source GPU", 300);
+	}
+    
+	public static double[] simulate_routine_0(double time) {
+		
+    	return simulate_default(time);
 		
     }
 	
 	public static double[] simulate_routine_1(double time) {
 		
-		CEventList l = new CEventList();
-		// A queue for the machine
-	
-		Queue RQ = new Queue();
-		GPUQueue GQ = new GPUQueue();
-	
-		QueueDistributor qd = new QueueDistributor(RQ, GQ);
-	
-		// sources don't need to be assigned to variables because they are linked to l and qd
-		new Source(qd,l,"Source normal", 30, ProductType.Normal);
-		new Source(qd,l,"Source GPU", 360, ProductType.GPU);
-	
-		// The Sink
-    	Sink si = new Sink("Sink 1");
-    	// machines don't need to be assigned to variables because they are linked to l and the q's
-    	for (int i=0; i < 6; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
-    	for (int i=6; i < 8; i++) new GPUMachine(GQ, si, l, "GPUMachine "+(i-5), 145, 42, 240, 50);
-    	
-    	// debug off
-    	Sink.DEBUG = false;
-    	Source.DEBUG = false;
-    	Machine.DEBUG = false;
-    	
-    	// set to false if you don't want all that output
-    	//boolean print_for_python_or_matlab = true;
-    	// set to true to store results rather than printing them
-    	//boolean save_data = true;
-    	
-    	// start the eventlist
-    	// We make the simulation last for one week
-    	double max_time = time;
-    	l.start(max_time);
-    	
-    	double[] results = mean_and_percentile_collect(si);
-    	
-		return results;
-		
-    	//data_collect(si, print_for_python_or_matlab, save_data, "data");
+		return simulate_seperate(time);
     }
-    
-    @SuppressWarnings("unchecked")
-	/*private static void data_collect(Sink si, boolean get_py_or_mat_data, boolean store_to_file, String file_name) {
-    	// collecting data for matlab:
-    	ArrayList<Double>[] lists = new ArrayList[] {si.getRegularDelays(), si.getGPUDelays(),
-    			si.getAllDelays(), si.getRegularTimes(), si.getGPUTimes(), si.getAllTimes()};
-    	String[] names = new String[]
-    			{"reg_delays", "gpu_delays", "all_delays", "reg_times", "gpu_times", "all_times"};
-    	
-    	PrintStream out = setup_writer(store_to_file, file_name);
-    	if (get_py_or_mat_data)
-	    	for (int i=0; i < lists.length; i++) { // CANADA uses "." as decimal seperator
-	    		out.format(Locale.CANADA, "%s = [%e", names[i], lists[i].get(0));
-	    		for (int k=1; k < lists[i].size(); k++)
-	    			out.format(Locale.CANADA, ", %e", lists[i].get(k));
-	    		out.println("];");
-	    	}
-    	
-    	System.out.format(Locale.CANADA, "Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
-    	"Overall mean delay time - %.3f\nRegular 90th percentile delay time - %.3f\n"+
-    	"GPU 90th percentile delay time - %.3f\nAll 90th percentile delay time - %.3f\n",
-    			si.getMeanRegular(), si.getMeanGPU(), si.getMeanAll(),
-    			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));
-    }*/
     
     private static void store_data(double[] mean, double[] gpu_mean, double[] regular_mean,
     		double[] percentile, double[] percentile_gpu, double[] percentile_regular, String file_name) {
@@ -227,20 +219,5 @@ public class Simulation {
     			si.getMeanRegular(), si.getPercentileAll(0.9), si.getPercentileGPU(0.9), si.getPercentileRegular(0.9)};
     	return lists;
     }
-    
-    /*private static PrintStream setup_writer(boolean save_data, String run_name) {
-    	PrintStream out = System.out;
-    	if (save_data) {
-	    	File folder = new File("data_output");
-	    	folder.mkdirs();
-	    	List<String> file_names = List.of(folder.listFiles()).stream().map(f -> f.getName()).collect(Collectors.toList());
-	    	int index = 1;
-	    	while (file_names.contains(String.format("%s%03d.txt", run_name, index))) index++;
-			try {
-				out = new PrintStream(new File(String.format("data_output/%s%03d.txt", run_name, index)));
-			} catch (FileNotFoundException e) { e.printStackTrace(); System.exit(-1); }
-    	}
-    	return out;
-    }*/
     
 }
