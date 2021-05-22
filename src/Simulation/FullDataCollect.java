@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
  * Put this data collection code in a seperate file because it caused runtime errors in older java versions
  */
 public final class FullDataCollect {
+	
+	public static boolean PRINT = false;
 
 	@SuppressWarnings("unchecked")
 	public static void data_collect(Sink si, boolean get_py_or_mat_data, boolean store_to_file, String file_name) {
@@ -22,7 +24,7 @@ public final class FullDataCollect {
     	String[] names = new String[]
     			{"reg_delays", "gpu_delays", "all_delays", "reg_times", "gpu_times", "all_times"};
     	
-    	System.out.format("\nfinished simulation after %d iterations\n", lists[5].size());
+    	if (PRINT) System.out.format("\nfinished simulation after %d iterations\n", lists[5].size());
     	
     	PrintStream out = setup_writer(store_to_file, file_name);
     	if (get_py_or_mat_data)
@@ -33,11 +35,12 @@ public final class FullDataCollect {
 	    		out.println("];");
 	    	}
     	
-    	System.out.format(Locale.CANADA, "Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
+    	if (PRINT)
+    	{System.out.format(Locale.CANADA, "Regular mean delay time - %.3f\nGPU mean delay time - %.3f\n"+
     	"Overall mean delay time - %.3f\nRegular 90th percentile delay time - %.3f\n"+
     	"GPU 90th percentile delay time - %.3f\nAll 90th percentile delay time - %.3f\n",
     			si.getMeanRegular(), si.getMeanGPU(), si.getMeanAll(),
-    			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));
+    			si.getPercentileRegular(0.9), si.getPercentileGPU(0.9), si.getPercentileAll(0.9));}
     }
 	
 	private static PrintStream setup_writer(boolean save_data, String run_name) {

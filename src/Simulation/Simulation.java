@@ -18,10 +18,17 @@ public class Simulation {
 	public static final int GET_RESULTS 	= 1 << 3; // 8
 	public static final int STORE_TO_FILE 	= 1 << 4; // 16
 	
+	public static int DEBUG = GET_RESULTS | STORE_TO_FILE;
+	
 	public static void main(String[] args) {
 		int size = 1000;
 		double time = 10080*4;
 		
+		run_both(size, time, true, "output_routine_0.txt", "output_routine_1.txt");
+		
+    }
+	
+	public static void run_both(int size, double time, boolean save_to_file, String filename0, String filename1) {
 		double[] mean_delay = new double[size];
 		double[] mean_gpu_delay = new double[size];
 		double[] mean_regular_delay = new double[size];
@@ -42,7 +49,7 @@ public class Simulation {
 		}
 		
 		store_data(mean_delay, mean_gpu_delay, mean_regular_delay, percentile_90_delay,
-				percentile_90_gpu_delay, percentile_90_regular_delay, "output_routine_1.txt");
+				percentile_90_gpu_delay, percentile_90_regular_delay, filename1);
 		
 		
 		mean_delay = new double[size];
@@ -65,12 +72,11 @@ public class Simulation {
 		}
 		
 		store_data(mean_delay, mean_gpu_delay, mean_regular_delay, percentile_90_delay,
-				percentile_90_gpu_delay, percentile_90_regular_delay, "output_routine_0.txt");
-		
-    }
+				percentile_90_gpu_delay, percentile_90_regular_delay, filename0);
+	}
 	
 	public static double[] simulate_default(double max_time) {
-		return simulate_default(max_time, 0);
+		return simulate_default(max_time, DEBUG);
 	}
 	public static double[] simulate_default(double max_time, int DEBUG) {
 		return simulate_default(6, 2, max_time, DEBUG);
@@ -102,7 +108,7 @@ public class Simulation {
     }
 	
 	public static double[] simulate_seperate(double max_time) {
-		return simulate_seperate(max_time, 0);
+		return simulate_seperate(max_time, DEBUG);
 	}
 	public static double[] simulate_seperate(double max_time, int DEBUG) {
 		return simulate_seperate(6, 2, max_time, DEBUG);
