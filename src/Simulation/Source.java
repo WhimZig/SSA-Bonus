@@ -42,6 +42,16 @@ public class Source implements CProcess
 	
 	ProductType prod;
 	
+	/**
+	 * @param q any product acceptor (for example, a QueueDistributor)
+	 * @param l an event-list
+	 * @param n the name of this source
+	 * @param e the product-type that this source exclusively generates
+	 * @param meanS the mean inter-arrival-time for GPU products
+	 * @param meanNS the mean arrival-rate for CPU products
+	 * @param amplitude the amplitude of the periodic CPU product arrival distribution
+	 * @param period the period of the periodic CPU product arrival distribution
+	 */
 	public Source(ProductAcceptor q, CEventList l, String n, ProductType e, 
 			double meanS, double meanNS, double amplitude, double period) {
 		list = l;
@@ -60,19 +70,18 @@ public class Source implements CProcess
 		}
 	}
 	
-	public Source(ProductAcceptor q,CEventList l,String n)
+	/*
+	 * GPU task generator with the given mean inter-arrival-time
+	 */
+	public Source(ProductAcceptor q,CEventList l,String n, double m_iat)
 	{
-		this(q, l, n, ProductType.Normal);
+		this(q, l, n, ProductType.GPU, m_iat, 2./60, 0.8/60, 24.*60);
 	}
-	
-	public Source(ProductAcceptor q,CEventList l,String n, ProductType e)
-	{
-		this(q, l, n, 0.2/60, e);
-	}
-	
-	public Source(ProductAcceptor q,CEventList l,String n, double m, ProductType e)
-	{
-		this(q, l, n, e, m, 2./60, 0.8/60, 24.*60);
+	/**
+	 * CPU task generator with the given periodic qualities
+	 */
+	public Source(ProductAcceptor q, CEventList l, String n, double m_rate, double amplitude, double period) {
+		this(q, l, n, ProductType.Normal, 0.2/60, m_rate, amplitude, period);
 	}
 
 	/**

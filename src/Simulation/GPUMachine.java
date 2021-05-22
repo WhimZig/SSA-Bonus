@@ -30,8 +30,10 @@ public class GPUMachine extends Machine {
 			double duration;
 			
 			if(type == ProductType.Normal) {
+				//System.out.println("doing normal");
 				duration = drawRandomNormal(meanProcTime, std);
 			} else {
+				//System.out.println("doing GPU");
 				duration = drawRandomNormal(meanGPUTime, stdGPU);
 			}
 			
