@@ -102,6 +102,10 @@ public class Sink implements ProductAcceptor
 		print_delay();
 		return true;
 	}
+        
+    public String getName() {
+    	return name;
+    }
 	
 	public int[] getNumbers()
 	{

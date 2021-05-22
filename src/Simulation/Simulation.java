@@ -7,13 +7,8 @@
 package Simulation;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.*;
 
 public class Simulation {
 	
