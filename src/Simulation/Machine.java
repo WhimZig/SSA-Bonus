@@ -139,6 +139,10 @@ public class Machine implements CProcess,ProductAcceptor
 		queue.askProduct(this);
 	}
 	
+	public boolean isIdle() {
+		return status == 'i';
+	}
+	
 	/**
 	*	Let the machine accept a product and let it start handling it
 	*	@param p	The product that is offered

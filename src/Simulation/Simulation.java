@@ -7,6 +7,7 @@
 package Simulation;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -24,11 +25,17 @@ public class Simulation {
 		int size = 1000;
 		double time = 10080*4;
 		
-		run_both(size, time, true, "output_routine_0.txt", "output_routine_1.txt");
+		run_both(size, time, "output2_routine_0.txt", "output2_routine_1.txt", "output2_routine_2.txt");
 		
     }
 	
-	public static void run_both(int size, double time, boolean save_to_file, String filename0, String filename1) {
+	public static void run_both(int size, double time, String filename0, String filename1, String filename2) {
+		run_and_save(size, time, filename0, Simulation::simulate_default);
+		run_and_save(size, time, filename1, Simulation::simulate_seperate);
+		run_and_save(size, time, filename2, Simulation::simulate_smart);
+	}
+	
+	public static void run_and_save(int size, double time, String filename, Function<Double, double[]> simulator) {
 		double[] mean_delay = new double[size];
 		double[] mean_gpu_delay = new double[size];
 		double[] mean_regular_delay = new double[size];
@@ -38,7 +45,7 @@ public class Simulation {
 		
 		
 		for(int j=0; j<size; j++) {
-			double[] results = simulate_routine_1(time);
+			double[] results = simulator.apply(time);
 		
 			mean_delay[j] = results[0];
 	    	mean_gpu_delay[j] = results[1];
@@ -49,30 +56,7 @@ public class Simulation {
 		}
 		
 		store_data(mean_delay, mean_gpu_delay, mean_regular_delay, percentile_90_delay,
-				percentile_90_gpu_delay, percentile_90_regular_delay, filename1);
-		
-		
-		mean_delay = new double[size];
-		mean_gpu_delay = new double[size];
-		mean_regular_delay = new double[size];
-		percentile_90_delay = new double[size];
-		percentile_90_gpu_delay = new double[size];
-		percentile_90_regular_delay = new double[size];
-		
-		
-		for(int j=0; j<size; j++) {
-			double[] results = simulate_routine_0(time);
-		
-			mean_delay[j] = results[0];
-	    	mean_gpu_delay[j] = results[1];
-	    	mean_regular_delay[j] = results[2];
-	    	percentile_90_delay[j] = results[3];
-	    	percentile_90_gpu_delay[j] = results[4];
-	    	percentile_90_regular_delay[j] = results[5];
-		}
-		
-		store_data(mean_delay, mean_gpu_delay, mean_regular_delay, percentile_90_delay,
-				percentile_90_gpu_delay, percentile_90_regular_delay, filename0);
+				percentile_90_gpu_delay, percentile_90_regular_delay, filename);
 	}
 	
 	public static double[] simulate_default(double max_time) {
@@ -136,6 +120,36 @@ public class Simulation {
 		return results;
     }
 	
+	public static double[] simulate_smart(double max_time) {
+		return simulate_smart(max_time, DEBUG);
+	}
+	public static double[] simulate_smart(double max_time, int DEBUG) {
+		return simulate_smart(6, 2, max_time, DEBUG);
+	}
+	public static double[] simulate_smart(int num_CPU_cores, int num_GPU_cores, double max_time, int DEBUG) {
+		CEventList l = new CEventList();
+    	// A queue for the machine
+    	
+    	Queue RQ = new Queue();
+    	GPUQueue GQ = new GPUQueue();
+    	
+    	// The Sink
+    	Sink si = new Sink("Sink 1");
+    	// machines don't need to be assigned to variables because they are linked to l and the q's
+    	for (int i=0; i < num_CPU_cores; i++) new Machine(RQ, si, l, "Machine "+(i+1), 145, 42);
+    	ArrayList<GPUMachine> gpus = new ArrayList<>();
+    	for (int i=0; i < num_GPU_cores; i++) gpus.add(new GPUMachine(GQ, si, l, "GPUMachine "+(i+1), 145, 42, 240, 50));
+    	
+    	QueueDistributor qd = new QueueDistributor(RQ, GQ, gpus);
+    	attach_source(l, qd);
+    	
+    	start(l, si, max_time, DEBUG, "smart");
+    	
+    	double[] results = mean_and_percentile_collect(si);
+    	
+		return results;
+    }
+	
 	private static void start(CEventList l, Sink si, double max_time, int DEBUG, String file_name) {
 		// debug config
     	Sink.DEBUG = (DEBUG & SINK_DEBUG) > 0;
@@ -158,17 +172,6 @@ public class Simulation {
     	new Source(qd,l,"Source normal", 2./60, 0.8/60, 24.*60);
     	new Source(qd,l,"Source GPU", 300);
 	}
-    
-	public static double[] simulate_routine_0(double time) {
-		
-    	return simulate_default(time);
-		
-    }
-	
-	public static double[] simulate_routine_1(double time) {
-		
-		return simulate_seperate(time);
-    }
     
     private static void store_data(double[] mean, double[] gpu_mean, double[] regular_mean,
     		double[] percentile, double[] percentile_gpu, double[] percentile_regular, String file_name) {
@@ -208,7 +211,6 @@ public class Simulation {
 			
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
