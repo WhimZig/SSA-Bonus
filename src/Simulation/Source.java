@@ -150,6 +150,7 @@ public class Source implements CProcess
 	
 	// This assumes that it'll always be with a sinusoid version
 	// Method givne follows thinning algorithm suggested here: http://www.columbia.edu/~ks20/4404-Sigman/4404-Notes-NSP.pdf
+	@Deprecated
 	public double drawNonStationaryExponential(double mean, double cur_time, double amplitude) {
 		double time = turnToDayTime(cur_time);
 		

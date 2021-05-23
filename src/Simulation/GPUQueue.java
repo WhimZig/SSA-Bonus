@@ -78,8 +78,7 @@ public class GPUQueue extends Queue {
 				requests.remove(0);
 			}
 			
-			// This code might be stupid
-			// Determining where to store the stuff
+			// Determining in which queue to store the task
 			if(!delivered) {
 				if(p.prod == ProductType.Normal) {
 					productQueue.add(p); // Otherwise store it
