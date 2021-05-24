@@ -67,7 +67,6 @@ public class QueueDistributor implements ProductAcceptor {
 					}
 				}
 			}
-			// If this somehow screws up, we cry
 			correct.giveProduct(p);
 			
 		} else {

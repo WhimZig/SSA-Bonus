@@ -35,8 +35,7 @@ public class Machine implements CProcess,ProductAcceptor
 	 */
 	protected double std;
 	
-	// I'm making it static so that I can easily modify it later on
-	// That way each machine can easily have a different seed
+	// This way we can set the seed if we need to
 	static long seed = System.currentTimeMillis();
 	
 	static {
@@ -215,7 +214,7 @@ public class Machine implements CProcess,ProductAcceptor
 	
 	// I modified it to guarantee no values less than 1
 	// As that's required by the general system
-	// Not the best implementation, but it works
+	// value truncated to [1,\infty)
 	protected double drawRandomNormal(double mean, double std) {
 		double val = mean + rand_generator.nextGaussian()*std;
 		if (val < 1) {

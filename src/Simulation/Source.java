@@ -32,7 +32,7 @@ public class Source implements CProcess
 	private double period;
 	
 	// Random number generator and its seed
-	// Should be modified to allow for different seeds, but this works
+	// Can be modified to allow for different seeds
 	protected static long seed = System.currentTimeMillis();
 	static {
 		System.out.println("Seed used for Source : "+seed);
@@ -102,7 +102,7 @@ public class Source implements CProcess
     @Override
 	public void execute(ProductType type, double time)
 	{
-		// show arrival
+		// show arrival if needed
 		if (DEBUG) System.out.println("Arrival at time = " + time + " of product " + type);
 		// give arrived product to queue
 		Product p = new Product(type);
@@ -122,7 +122,7 @@ public class Source implements CProcess
 			// Create a new event in the eventlist
 			list.add(this,prod,time+duration); //target,type,time
 		}
-		else { // not sure if this works correctly
+		else {
 			interArrCnt++;
 			if(interarrivalTimes.length>interArrCnt)
 			{
@@ -140,6 +140,7 @@ public class Source implements CProcess
 		// draw a [0,1] uniform distributed number
 		double u = Math.random();
 		// Convert it into a exponentially distributed random variate with mean 33
+		// using the inverse transformation method
 		double res = -mean*Math.log(u);
 		return res;
 	}
@@ -149,7 +150,9 @@ public class Source implements CProcess
 	}
 	
 	// This assumes that it'll always be with a sinusoid version
-	// Method givne follows thinning algorithm suggested here: http://www.columbia.edu/~ks20/4404-Sigman/4404-Notes-NSP.pdf
+	// Method given follows thinning algorithm suggested here: http://www.columbia.edu/~ks20/4404-Sigman/4404-Notes-NSP.pdf
+	// this method was deprecated as we finished implementation of the inverse transformation method (in Randomizer.java) earlier
+	// (this method, shown below, is not functioning correctly)
 	@Deprecated
 	public double drawNonStationaryExponential(double mean, double cur_time, double amplitude) {
 		double time = turnToDayTime(cur_time);
@@ -163,8 +166,6 @@ public class Source implements CProcess
 		
 		double final_value = -(1.0/upperBound)*Math.log(u);
 		
-		// I guess I can transform this into a if true value later?
-		// I'll worry about it later I guess
 		while(invalid_number) {
 			
 			double validity_check = generator.nextDouble();
@@ -207,11 +208,11 @@ public class Source implements CProcess
 	}
 	
 	/*
-	 * Extensive testing of source vs randomizer:
-	 *  - randomizer matches 1/rate(t) very closely
-	 *  - source seems to not change much over time and just matches the overal mean
+	 * Extensive testing of thinning vs inverse (Newton):
+	 *  - inverse matches 1/rate(t) very closely
+	 *  - thinning seems to not change much over time and just matches the overal mean
 	 *  
-	 *  - I don't know what's wrong with source.. I tried fixing it but I can't find a way
+	 *  - I don't know what's wrong with thinning.. I tried fixing it but I can't find a way
 	 * 
 	public static void main(String[] args) {
 		
