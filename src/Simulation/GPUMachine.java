@@ -2,9 +2,6 @@ package Simulation;
 
 public class GPUMachine extends Machine {
 	
-	// There are a couple of ways of adding the constructor
-	// But this felt good enough, just make it the default time no matter what
-	// Makes my life easier I guess
 	double meanGPUTime;
 	double stdGPU;
 	
@@ -24,28 +21,26 @@ public class GPUMachine extends Machine {
 	@Override
 	protected void startProduction(ProductType type)
 	{
-		// generate duration
+		// generate service time
 		if(meanProcTime>0)
 		{
 			double duration;
 			
 			if(type == ProductType.Normal) {
-				//System.out.println("doing normal");
+				//System.out.println("servicing regular task");
 				duration = drawRandomNormal(meanProcTime, std);
 			} else {
-				//System.out.println("doing GPU");
+				//System.out.println("servicing GPU task");
 				duration = drawRandomNormal(meanGPUTime, stdGPU);
 			}
 			
 			
 			// Create a new event in the eventlist
-			double tme = eventlist.getTime();
-			eventlist.add(this,type,tme+duration); //target,type,time
+			double time = eventlist.getTime();
+			eventlist.add(this,type,time+duration);
 			// set status to busy
 			status='b';
 		}
-		// I'm leaving everything here as is, just because we're not gonna use it
-		// And modifying it felt too hard
 		else
 		{
 			if(processingTimes.length>procCnt)

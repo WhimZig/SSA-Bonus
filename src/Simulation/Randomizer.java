@@ -49,35 +49,9 @@ public class Randomizer {
 		this.source = new Random(seed);
 	}
 	
-	public void set_seed(long seed) {
-		this.seed = seed;
-		this.source = new Random(seed);
-	}
-	
-	/**
-	 * This function solves the integral \int_{t}^{t+dt} lambda(a) da for:
-	 * lambda(T) = mean + amplitude * sin( T * 2pi / period)
-	 */
-	private double get_mean_arrival_rate_times_t(double start_time, double end_time, double period, double amplitude, double mean) {
-		double T1 = start_time, T2 = end_time, P = period, A = amplitude, M = mean;
-		double w = 0.5 * P / Math.PI;
-		double Z = w * Math.cos(T1 / w);
-		double L = M * (T2-T1) - A * w * Math.cos(T2/w) + A * Z;
-		return L; // / (T2 - T1);
-	}
-	/*
-	private double get_mean_arrival_rate(double start_time, double end_time, double period, double amplitude, double mean) {
-		return get_mean_arrival_rate_times_t(start_time, end_time, period, amplitude, mean) / (end_time - start_time);
-	}*/
-	
-	public double non_stationary_poisson_CDF(double current_time, double interarrival_time, double period, double amplitude, double mean) {
-		double lt = get_mean_arrival_rate_times_t(current_time, current_time + interarrival_time, period, amplitude, mean);
-		return 1 - Math.exp(-lt);
-	}
-	
-	public double non_stationary_poisson_PDF(double current_time, double interarrival_time, double period, double amplitude, double mean) {
-		double lt = get_mean_arrival_rate_times_t(current_time, current_time + interarrival_time, period, amplitude, mean);
-		return (lt / interarrival_time) * Math.exp(- lt);
+	public double nextNonStationaryPoisson(double current_time, double period, double amplitude, double mean) {
+		double p = source.nextDouble();
+		return non_stationary_poisson_iCDF(current_time, p, period, amplitude, mean);
 	}
 	
 	public double non_stationary_poisson_iCDF(double current_time, double probability, double period, double amplitude, double mean) {
@@ -94,15 +68,42 @@ public class Randomizer {
 		return x_i;
 	}
 	
+	public double non_stationary_poisson_CDF(double current_time, double interarrival_time, double period, double amplitude, double mean) {
+		double lt = get_mean_arrival_rate_times_t(current_time, current_time + interarrival_time, period, amplitude, mean);
+		return 1 - Math.exp(-lt);
+	}
+	
+	public double non_stationary_poisson_PDF(double current_time, double interarrival_time, double period, double amplitude, double mean) {
+		double lt = get_mean_arrival_rate_times_t(current_time, current_time + interarrival_time, period, amplitude, mean);
+		return (lt / interarrival_time) * Math.exp(- lt);
+	}
+	
+	/**
+	 * This function solves the integral \int_{t}^{t+dt} lambda(a) da for:
+	 * lambda(T) = mean + amplitude * sin( T * 2pi / period)
+	 */
+	private double get_mean_arrival_rate_times_t(double start_time, double end_time, double period, double amplitude, double mean) {
+		double T1 = start_time, T2 = end_time, P = period, A = amplitude, M = mean;
+		double w = 0.5 * P / Math.PI;
+		double Z = w * Math.cos(T1 / w);
+		double L = M * (T2-T1) - A * w * Math.cos(T2/w) + A * Z;
+		return L; // / (T2 - T1);
+	}
+	
+	/*
+	private double get_mean_arrival_rate(double start_time, double end_time, double period, double amplitude, double mean) {
+		return get_mean_arrival_rate_times_t(start_time, end_time, period, amplitude, mean) / (end_time - start_time);
+	}*/
+	
 	private double error = 0;
+	
+	public void set_seed(long seed) {
+		this.seed = seed;
+		this.source = new Random(seed);
+	}
 	
 	public double get_error() {
 		return error;
-	}
-	
-	public double nextNonStationaryPoisson(double current_time, double period, double amplitude, double mean) {
-		double p = source.nextDouble();
-		return non_stationary_poisson_iCDF(current_time, p, period, amplitude, mean);
 	}
 	
 }

@@ -13,7 +13,8 @@ public class Sink implements ProductAcceptor
 	
 	/** All products are kept */
 	private ArrayList<Product> products;
-	/** All properties of products are kept */
+	
+	// All properties of products are kept
 	private ArrayList<Integer> numbers;
 	private ArrayList<Double> times;
 	private ArrayList<String> events;
@@ -22,13 +23,16 @@ public class Sink implements ProductAcceptor
 	private ArrayList<Double> regularDelay;
 	private ArrayList<Double> GPUDelay;
 	private ArrayList<Double> allDelays;
+	
 	// starting time of jobs; in order to plot and test periodicity of jobs
 	private ArrayList<Double> regularTimes;
 	private ArrayList<Double> GPUTimes;
 	private ArrayList<Double> allTimes;
-	/** Counter to number products */
+	
+	/** Counter for the number products received */
 	private int number;
-	/** Name of the sink */
+	
+	/** Name of the sink (mainly for debugging) */
 	private String name;
 	
 	private double totalDelay = 0;
@@ -106,7 +110,7 @@ public class Sink implements ProductAcceptor
     public String getName() {
     	return name;
     }
-	
+    
 	public int[] getNumbers()
 	{
 		numbers.trimToSize();
@@ -117,7 +121,6 @@ public class Sink implements ProductAcceptor
 		}
 		return tmp;
 	}
-
 	public double[] getTimes()
 	{
 		times.trimToSize();
@@ -128,14 +131,12 @@ public class Sink implements ProductAcceptor
 		}
 		return tmp;
 	}
-
 	public String[] getEvents()
 	{
 		String[] tmp = new String[events.size()];
 		tmp = events.toArray(tmp);
 		return tmp;
 	}
-
 	public String[] getStations()
 	{
 		String[] tmp = new String[stations.size()];
